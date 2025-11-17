@@ -1,0 +1,184 @@
+<!-- templates/dashboard/home.html -->
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Dashboard Home{% endblock %}
+{% block page_title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Total Workers</h6>
+                    <h2 class="mb-0">{{ total_workers }}</h2>
+                    <small class="text-success">
+                        <i class="fas fa-arrow-up"></i> {{ verified_workers }} Verified
+                    </small>
+                    <small class="text-warning ms-2">
+                        {{ pending_workers }} Pending
+                    </small>
+                </div>
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Total Tasks</h6>
+                    <h2 class="mb-0">{{ total_tasks }}</h2>
+                    <small class="text-primary">
+                        {{ active_tasks }} Active
+                    </small>
+                    <small class="text-success ms-2">
+                        {{ completed_tasks }} Completed
+                    </small>
+                </div>
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="fas fa-tasks"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted mb-2">Requirements</h6>
+                    <h2 class="mb-0">{{ total_requirements }}</h2>
+                    <small class="text-warning">
+                        <i class="fas fa-clock"></i> {{ pending_requirements }} Pending
+                    </small>
+                </div>
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Three Main Buckets -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i> Workers Bucket</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Manage worker registrations and verifications</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'dashboard:worker_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-list me-2"></i> View All Workers
+                    </a>
+                    <a href="{% url 'dashboard:worker_list' %}?status=pending" class="btn btn-outline-warning">
+                        <i class="fas fa-clock me-2"></i> Pending ({{ pending_workers }})
+                    </a>
+                </div>
+                
+                <hr>
+                <h6 class="mb-3">Recent Workers</h6>
+                <div class="list-group list-group-flush">
+                    {% for worker in recent_workers %}
+                    <a href="{% url 'dashboard:worker_detail' worker.id %}" class="list-group-item list-group-item-action px-0">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>{{ worker.name }}</strong>
+                                <br><small class="text-muted">{{ worker.phone }}</small>
+                            </div>
+                            <span class="badge bg-{{ worker.verification_status|default:'secondary' }}">
+                                {{ worker.get_verification_status_display }}
+                            </span>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p class="text-muted">No recent workers</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-tasks me-2"></i> Tasks Bucket</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Manage and assign tasks to workers</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'dashboard:task_list' %}" class="btn btn-outline-success">
+                        <i class="fas fa-list me-2"></i> View All Tasks
+                    </a>
+                    <a href="{% url 'dashboard:task_list' %}?status=pending" class="btn btn-outline-warning">
+                        <i class="fas fa-clock me-2"></i> Pending ({{ pending_tasks }})
+                    </a>
+                </div>
+                
+                <hr>
+                <h6 class="mb-3">Recent Tasks</h6>
+                <div class="list-group list-group-flush">
+                    {% for task in recent_tasks %}
+                    <a href="{% url 'dashboard:task_detail' task.id %}" class="list-group-item list-group-item-action px-0">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>{{ task.cust_name }}</strong>
+                                <br><small class="text-muted">{{ task.category.name }}</small>
+                            </div>
+                            <span class="badge bg-{{ task.status }}">
+                                {{ task.get_status_display }}
+                            </span>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p class="text-muted">No recent tasks</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i> Task Logs</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">View call logs and service requirements</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'dashboard:task_log_history' %}" class="btn btn-outline-info">
+                        <i class="fas fa-list me-2"></i> View All Logs
+                    </a>
+                </div>
+                
+                <hr>
+                <h6 class="mb-3">Recent Requirements</h6>
+                <div class="list-group list-group-flush">
+                    {% for req in recent_requirements %}
+                    <a href="{% url 'dashboard:requirement_detail' req.id %}" class="list-group-item list-group-item-action px-0">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>{{ req.name }}</strong>
+                                <br><small class="text-muted">{{ req.requirement_id }}</small>
+                            </div>
+                            <span class="badge bg-{{ req.status }}">
+                                {{ req.get_status_display }}
+                            </span>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p class="text-muted">No recent requirements</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

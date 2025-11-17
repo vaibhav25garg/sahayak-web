@@ -1,0 +1,202 @@
+<!-- templates/dashboard/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} - ServiceConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --sidebar-width: 250px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+        
+        .sidebar-menu a {
+            display: block;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding-left: 30px;
+        }
+        
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+        }
+        
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header text-center">
+            <i class="fas fa-tools fa-2x mb-2"></i>
+            <h4>ServiceConnect</h4>
+            <p class="mb-0 small">Admin Dashboard</p>
+        </div>
+        
+        <div class="sidebar-menu">
+            <a href="{% url 'dashboard:home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                <i class="fas fa-home me-2"></i> Dashboard
+            </a>
+            
+            <div class="px-3 pt-3 pb-2 text-uppercase small" style="opacity: 0.7;">
+                Main Buckets
+            </div>
+            
+            <a href="{% url 'dashboard:worker_list' %}" class="{% if 'worker' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-users me-2"></i> Workers
+            </a>
+            
+            <a href="{% url 'dashboard:task_list' %}" class="{% if 'task' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-tasks me-2"></i> Tasks
+            </a>
+            
+            <a href="{% url 'dashboard:task_log_history' %}" class="{% if 'log' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-history me-2"></i> Task Logs
+            </a>
+            
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 10px;">
+            
+            <a href="/{{ ADMIN_URL }}" target="_blank">
+                <i class="fas fa-cog me-2"></i> Django Admin
+            </a>
+            
+            <a href="{% url 'dashboard:logout' %}">
+                <i class="fas fa-sign-out-alt me-2"></i> Logout
+            </a>
+        </div>
+        
+        <div class="px-3 py-3 border-top" style="border-color: rgba(255,255,255,0.1) !important; position: absolute; bottom: 0; width: 100%;">
+            <small class="d-block text-center" style="opacity: 0.7;">
+                <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+            </small>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div>
+                <h4 class="mb-0">{% block page_title %}Dashboard{% endblock %}</h4>
+            </div>
+            <div>
+                <span class="text-muted me-3">
+                    <i class="fas fa-calendar me-1"></i> {{ today|date:"d M Y" }}
+                </span>
+                <span class="text-muted">
+                    <i class="fas fa-clock me-1"></i> <span id="current-time"></span>
+                </span>
+            </div>
+        </div>
+        
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                <strong>
+                    {% if message.tags == 'success' %}
+                        <i class="fas fa-check-circle"></i> Success!
+                    {% elif message.tags == 'error' %}
+                        <i class="fas fa-exclamation-circle"></i> Error!
+                    {% else %}
+                        <i class="fas fa-info-circle"></i>
+                    {% endif %}
+                </strong>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+        
+        <!-- Page Content -->
+        {% block content %}{% endblock %}
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit'
+            });
+            document.getElementById('current-time').textContent = timeString;
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

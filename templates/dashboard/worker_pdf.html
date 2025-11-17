@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Worker Details - {{ worker.name }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #ccc;
+    }
+    .label {
+      font-weight: bold;
+      width: 30%;
+    }
+  </style>
+</head>
+<body>
+  <h2>Worker Details</h2>
+  <table>
+    <tr>
+      <td class="label">Name:</td>
+      <td>{{ worker.name }}</td>
+    </tr>
+    <tr>
+      <td class="label">Phone:</td>
+      <td>{{ worker.phone }}</td>
+    </tr>
+    <tr>
+      <td class="label">WhatsApp:</td>
+      <td>{{ worker.whatsapp_no }}</td>
+    </tr>
+    <tr>
+      <td class="label">Age:</td>
+      <td>{{ worker.age }}</td>
+    </tr>
+    <tr>
+      <td class="label">Aadhaar No:</td>
+      <td>{{ worker.aadhar_no }}</td>
+    </tr>
+    <tr>
+      <td class="label">Primary Category:</td>
+      <td>{{ worker.primary_category.name }}</td>
+    </tr>
+    <tr>
+      <td class="label">Location:</td>
+      <td>{{ worker.location.name }}</td>
+    </tr>
+    <tr>
+      <td class="label">Verification Status:</td>
+      <td>{{ worker.verification_status|title }}</td>
+    </tr>
+    <tr>
+      <td class="label">Ranking Score:</td>
+      <td>{{ worker.ranking_score }}</td>
+    </tr>
+    <tr>
+      <td class="label">Created At:</td>
+      <td>{{ worker.created_at|date:"Y-m-d H:i" }}</td>
+    </tr>
+  </table>
+</body>
+</html>

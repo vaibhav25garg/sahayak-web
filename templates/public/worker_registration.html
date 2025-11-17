@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% block title %}Join as Worker | SahayakCircle{% endblock %}
+{% block content %}
+
+<div class="page-wrapper">
+    <div class="register-card">
+
+        <h2 class="title">Join as a Worker</h2>
+        <p class="subtitle">Provide your details to start working with SahayakCircle.</p>
+
+        <form method="POST" enctype="multipart/form-data" class="form">
+            {% csrf_token %}
+
+            <div class="grid">
+
+                <!-- Left Column -->
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" placeholder="Enter full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="phoneInput" name="phone" placeholder="Enter phone number" required>
+                </div>
+
+                <div class="form-group">
+                    <label>WhatsApp Number</label>
+                    <input type="text" id="whatsappInput" name="whatsapp_no" placeholder="Enter WhatsApp number">
+
+                    <div class="checkbox-inline">
+                        <input type="checkbox" id="sameAsPhone">
+                        <label for="sameAsPhone">Same as phone</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Age</label>
+                    <input type="number" name="age" placeholder="Enter age">
+                </div>
+
+                <div class="form-group">
+                    <label>Aadhar Number</label>
+                    <input type="text" name="aadhar_no" placeholder="Enter Aadhaar number">
+                </div>
+
+                <div class="form-group">
+                    <label>Pincode</label>
+                    <input type="text" id="pincodeInput" name="pincode" placeholder="Enter pincode" required>
+                </div>
+
+                <!-- Full width fields -->
+                <div class="form-group full">
+                    <label>Full Address</label>
+                    <input type="text" name="address" placeholder="House No, Street, Area">
+                </div>
+
+                <div class="form-group">
+                    <label>Primary Category</label>
+                    <select name="category" id="primaryCategorySelect" required>
+                        <option value="">Select Category</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group full">
+                    <label>Sub Categories (optional)</label>
+                    <select name="secondary_categories[]" id="subcategory-select" multiple></select>
+                    <small class="note">You can select multiple subcategories</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Aadhar Front</label>
+                    <input type="file" name="aadhar_img_front">
+                </div>
+
+                <div class="form-group">
+                    <label>Aadhar Back</label>
+                    <input type="file" name="aadhar_img_back">
+                </div>
+
+                <div class="form-group full">
+                    <label>Selfie</label>
+                    <input type="file" name="selfie_img">
+                </div>
+
+            </div>
+
+            <button class="submit-btn">Register Now</button>
+        </form>
+
+    </div>
+</div>
+
+<style>
+
+/* Wrapper */
+.page-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 40px 15px;
+}
+
+/* Card */
+.register-card {
+    width: 100%;
+    max-width: 750px;
+    padding: 35px 40px;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
+
+/* Title */
+.title {
+    text-align: center;
+    color: #007bff;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.subtitle {
+    text-align: center;
+    color: #6c757d;
+    margin-bottom: 25px;
+}
+
+/* GRID SYSTEM */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px 25px;
+}
+
+.form-group.full {
+    grid-column: span 2;
+}
+
+input, select {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #d4d4d4;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+/* MULTI SELECT FIX */
+#subcategory-select {
+    height: 140px !important;
+    padding: 10px;
+    border-radius: 8px;
+    resize: vertical;
+    overflow-y: auto;
+}
+
+/* Checkbox inline */
+.checkbox-inline {
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Button */
+.submit-btn {
+    width: 100%;
+    margin-top: 25px;
+    padding: 15px;
+    font-size: 18px;
+    background: #007bff;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.submit-btn:hover {
+    background: #0056b3;
+}
+
+/* MOBILE FIX */
+@media (max-width: 650px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+    .form-group.full {
+        grid-column: span 1;
+    }
+}
+</style>
+
+<script>
+// WhatsApp auto-fill
+document.getElementById("sameAsPhone").addEventListener("change", function () {
+    if (this.checked) {
+        document.getElementById("whatsappInput").value =
+            document.getElementById("phoneInput").value;
+    }
+});
+
+// Auto sync WhatsApp if phone changed
+document.getElementById("phoneInput").addEventListener("input", function () {
+    if (document.getElementById("sameAsPhone").checked) {
+        document.getElementById("whatsappInput").value = this.value;
+    }
+});
+
+// Load subcategories
+function loadSubcategories(categoryId) {
+    fetch(`/categories/get-subcategories/${categoryId}/`)
+        .then(res => res.json())
+        .then(data => {
+            let select = document.getElementById("subcategory-select");
+            select.innerHTML = "";
+
+            if (data.subcategories.length === 0) {
+                let option = document.createElement("option");
+                option.textContent = "No subcategories available";
+                option.disabled = true;
+                select.appendChild(option);
+                return;
+            }
+
+            data.subcategories.forEach(sub => {
+                let option = document.createElement("option");
+                option.value = sub.id;
+                option.textContent = sub.name;
+                select.appendChild(option);
+            });
+        });
+}
+
+// Listen category change
+document.getElementById("primaryCategorySelect").addEventListener("change", function () {
+    loadSubcategories(this.value);
+});
+</script>
+
+{% endblock %}

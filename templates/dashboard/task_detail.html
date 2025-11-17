@@ -1,0 +1,185 @@
+<!-- templates/dashboard/task_detail.html -->
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Task Detail{% endblock %}
+{% block page_title %}Task Details - #{{ task.id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Back Button -->
+    <div class="mb-3">
+        <a href="{% url 'dashboard:task_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i> Back to Tasks
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Task Information -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i> Task Information</h5>
+                    <span class="badge bg-light text-dark">Status: {{ task.status|title }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <strong>Customer Name:</strong>
+                            <p class="mb-2">{{ task.cust_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Phone:</strong>
+                            <p class="mb-2">{{ task.cust_phone }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>WhatsApp:</strong>
+                            <p class="mb-2">{{ task.cust_whatsapp|default:"N/A" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Category:</strong>
+                            <p class="mb-2">
+                                {% if task.category %}
+                                    <span class="badge bg-info">{{ task.category.name }}</span>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-12">
+                            <strong>Location:</strong>
+                            <p class="mb-2">{{ task.cust_location }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Pincode:</strong>
+                            <p class="mb-2">{{ task.pincode }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Schedule Date:</strong>
+                            <p class="mb-2">{{ task.schedule_date|date:"d M Y, h:i A" }}</p>
+                        </div>
+                        {% if task.additional_info %}
+                        <div class="col-md-12">
+                            <strong>Additional Information:</strong>
+                            <p class="mb-2">{{ task.additional_info }}</p>
+                        </div>
+                        {% endif %}
+                        {% if task.payment_received_amt %}
+                        <div class="col-md-6">
+                            <strong>Payment Received:</strong>
+                            <p class="mb-2">₹{{ task.payment_received_amt }}</p>
+                        </div>
+                        {% endif %}
+                        {% if task.rating %}
+                        <div class="col-md-6">
+                            <strong>Rating:</strong>
+                            <p class="mb-2">
+                                <span class="badge bg-warning">{{ task.rating }} ⭐</span>
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Status -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="fas fa-edit me-2"></i> Update Task Status</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'dashboard:task_update_status' task.id %}">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <select name="status" class="form-select" required>
+                                    <option value="pending" {% if task.status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="scheduled" {% if task.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                                    <option value="active" {% if task.status == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="completed" {% if task.status == 'completed' %}selected{% endif %}>Completed</option>
+                                    <option value="cancelled" {% if task.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-save me-2"></i> Update
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Worker Assignment -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-tie me-2"></i> Assigned Worker</h5>
+                </div>
+                <div class="card-body">
+                    {% if task.worker %}
+                    <div class="text-center">
+                        <h5>{{ task.worker.name }}</h5>
+                        <p class="text-muted mb-2">{{ task.worker.phone }}</p>
+                        <span class="badge bg-success mb-3">Assigned</span>
+                        <div class="d-grid">
+                            <a href="{% url 'dashboard:worker_detail' task.worker.id %}" class="btn btn-outline-primary">
+                                View Worker Profile
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-3">No worker assigned yet</p>
+                    
+                    <form method="post" action="{% url 'dashboard:task_assign_worker' task.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Select Worker:</label>
+                            <select name="worker_id" class="form-select" required>
+                                <option value="">Choose a worker...</option>
+                                {% for worker in available_workers %}
+                                <option value="{{ worker.id }}">
+                                    {{ worker.name }} - {{ worker.phone }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-user-plus me-2"></i> Assign Worker
+                            </button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Task Image -->
+            {% if task.task_image %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-image me-2"></i> Task Image</h5>
+                </div>
+                <div class="card-body">
+                    <img src="{{ task.task_image.url }}" class="img-fluid rounded" alt="Task Image">
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Metadata -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i> Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Created:</strong><br>{{ task.created_at|date:"d M Y, h:i A" }}</p>
+                    <p><strong>Last Updated:</strong><br>{{ task.updated_at|date:"d M Y, h:i A" }}</p>
+                    {% if task.day_service_done %}
+                    <p><strong>Completed On:</strong><br>{{ task.day_service_done|date:"d M Y" }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

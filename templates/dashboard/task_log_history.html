@@ -1,0 +1,63 @@
+{% extends 'dashboard/base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>📜 Task & Call Logs</h3>
+  </div>
+
+  <!-- Filters -->
+  <form method="get" class="row g-3 mb-4">
+    <div class="col-md-3"><input type="date" name="date_from" value="{{ date_from }}" class="form-control"></div>
+    <div class="col-md-3"><input type="date" name="date_to" value="{{ date_to }}" class="form-control"></div>
+    <div class="col-md-3">
+      <select name="status" class="form-select">
+        <option value="">All Status</option>
+        <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pending</option>
+        <option value="fulfilled" {% if selected_status == 'fulfilled' %}selected{% endif %}>Fulfilled</option>
+      </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-secondary w-100">Filter</button></div>
+  </form>
+
+  <h5 class="mb-3">📞 Recent Calling Logs</h5>
+  <table class="table table-striped align-middle mb-5">
+    <thead class="table-dark">
+      <tr><th>#</th><th>Worker</th><th>Category</th><th>Task</th><th>Summary</th><th>Date</th></tr>
+    </thead>
+    <tbody>
+      {% for log in calling_logs %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ log.worker.name }}</td>
+        <td>{{ log.category.name }}</td>
+        <td>{% if log.task %}#{{ log.task.id }}{% endif %}</td>
+        <td>{{ log.call_summary|truncatechars:50 }}</td>
+        <td>{{ log.created_at|date:"d M Y H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="text-center">No call logs found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h5 class="mb-3">🧾 Requirement Logs</h5>
+  <table class="table table-striped align-middle">
+    <thead class="table-dark">
+      <tr><th>#</th><th>Customer</th><th>Category</th><th>Status</th><th>Created</th></tr>
+    </thead>
+    <tbody>
+      {% for req in requirements %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ req.name }}<br><small>{{ req.number }}</small></td>
+        <td>{{ req.category.name }}</td>
+        <td><span class="badge {% if req.status == 'fulfilled' %}bg-success{% else %}bg-warning{% endif %}">{{ req.status|title }}</span></td>
+        <td>{{ req.created_at|date:"d M Y H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-center">No requirements found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

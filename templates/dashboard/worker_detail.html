@@ -1,0 +1,191 @@
+<!-- templates/dashboard/worker_detail.html -->
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Worker Detail{% endblock %}
+{% block page_title %}Worker Details - {{ worker.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Back Button -->
+    <div class="mb-3">
+        <a href="{% url 'dashboard:worker_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i> Back to Workers
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Worker Information Card -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i> Worker Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <strong>Name:</strong>
+                            <p class="mb-2">{{ worker.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Phone:</strong>
+                            <p class="mb-2">{{ worker.phone }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>WhatsApp:</strong>
+                            <p class="mb-2">{{ worker.whatsapp_no|default:"N/A" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Age:</strong>
+                            <p class="mb-2">{{ worker.age|default:"N/A" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Aadhar Number:</strong>
+                            <p class="mb-2">{{ worker.aadhar_no|default:"N/A" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Primary Category:</strong>
+                            <p class="mb-2">
+                                {% if worker.primary_category %}
+                                    <span class="badge bg-info">{{ worker.primary_category.name }}</span>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Location:</strong>
+                            <p class="mb-2">
+                                {% if worker.location %}
+                                    {{ worker.location.city }}, {{ worker.location.state }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Ranking Score:</strong>
+                            <p class="mb-2">
+                                <span class="badge bg-warning">{{ worker.ranking_score }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-12">
+                            <strong>Verification Status:</strong>
+                            <p class="mb-2">
+                                <span class="badge bg-{% if worker.verification_status == 'verified' %}success{% elif worker.verification_status == 'pending' %}warning{% else %}danger{% endif %}">
+                                    {{ worker.verification_status|title }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    {% if worker.verification_status == 'pending' %}
+                    <hr>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'dashboard:worker_verify' worker.id %}" class="btn btn-success">
+                            <i class="fas fa-check me-2"></i> Verify Worker
+                        </a>
+                        <a href="{% url 'dashboard:worker_reject' worker.id %}" class="btn btn-danger">
+                            <i class="fas fa-times me-2"></i> Reject Worker
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Worker Tasks -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-tasks me-2"></i> Assigned Tasks ({{ worker_tasks.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if worker_tasks %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Task ID</th>
+                                    <th>Customer</th>
+                                    <th>Category</th>
+                                    <th>Schedule Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in worker_tasks %}
+                                <tr>
+                                    <td>#{{ task.id }}</td>
+                                    <td>{{ task.cust_name }}</td>
+                                    <td>{{ task.category.name }}</td>
+                                    <td>{{ task.schedule_date|date:"d M Y" }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ task.status }}">
+                                            {{ task.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'dashboard:task_detail' task.id %}" class="btn btn-sm btn-info">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-3">No tasks assigned yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents Card -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-id-card me-2"></i> Documents</h5>
+                </div>
+                <div class="card-body">
+                    {% if worker.aadhar_img_front %}
+                    <div class="mb-3">
+                        <strong>Aadhar Front:</strong>
+                        <img src="{{ worker.aadhar_img_front.url }}" class="img-fluid rounded mt-2" alt="Aadhar Front">
+                    </div>
+                    {% endif %}
+
+                    {% if worker.aadhar_img_back %}
+                    <div class="mb-3">
+                        <strong>Aadhar Back:</strong>
+                        <img src="{{ worker.aadhar_img_back.url }}" class="img-fluid rounded mt-2" alt="Aadhar Back">
+                    </div>
+                    {% endif %}
+
+                    {% if worker.selfie_img %}
+                    <div class="mb-3">
+                        <strong>Selfie:</strong>
+                        <img src="{{ worker.selfie_img.url }}" class="img-fluid rounded mt-2" alt="Selfie">
+                    </div>
+                    {% endif %}
+
+                    {% if not worker.aadhar_img_front and not worker.aadhar_img_back and not worker.selfie_img %}
+                    <p class="text-muted text-center">No documents uploaded</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Metadata -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> Metadata</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Created:</strong><br>{{ worker.created_at|date:"d M Y, h:i A" }}</p>
+                    <p><strong>Last Updated:</strong><br>{{ worker.updated_at|date:"d M Y, h:i A" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

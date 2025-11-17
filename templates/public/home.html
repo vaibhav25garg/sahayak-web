@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <h1>Welcome to Our Service Platform</h1>
+    <p>Connect with verified local workers and request trusted services.</p>
+
+    <a href="{% url 'public:worker_registration' %}" class="btn btn-primary">Join as Worker</a>
+    <a href="{% url 'public:requirement_form' %}" class="btn btn-success">Request Service</a>
+</div>
+{% endblock %}

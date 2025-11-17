@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Request a Service | SahayakCircle{% endblock %}
+{% block content %}
+
+<div class="form-container">
+  <h2 class="form-title">Request a Service</h2>
+  <p class="form-subtitle">Submit your service request and get connected to the best nearby workers.</p>
+
+  <form method="POST" class="service-form">
+    {% csrf_token %}
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Your Name</label>
+        <input type="text" name="name" placeholder="Enter your full name" required>
+      </div>
+
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="text" name="phone" placeholder="Enter your phone number" required>
+      </div>
+
+      <div class="form-group">
+        <label>City</label>
+        <input type="text" name="city" placeholder="Enter your city" required>
+      </div>
+
+      <div class="form-group">
+        <label>Pincode</label>
+        <input type="text" name="pincode" placeholder="Enter area pincode" required>
+      </div>
+
+      <div class="form-group full-width">
+        <label>Full Address</label>
+        <input type="text" name="address" placeholder="House No, Street, Locality" required>
+      </div>
+
+      <div class="form-group full-width">
+        <label>Landmark (Optional)</label>
+        <input type="text" name="landmark" placeholder="Nearby landmark">
+      </div>
+
+      <div class="form-group full-width">
+        <label>Service Category</label>
+        <select name="category" required>
+          <option value="">Select a Category</option>
+          {% for cat in categories %}
+          <option value="{{ cat.id }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Preferred Date</label>
+        <input type="date" name="preferred_date">
+      </div>
+    </div>
+
+    <button type="submit" class="btn-submit">Submit Request</button>
+  </form>
+</div>
+
+<style>
+  .form-container {
+    background: #ffffff;
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .form-title {
+    text-align: center;
+    color: #007bff;
+    margin-bottom: 5px;
+  }
+
+  .form-subtitle {
+    text-align: center;
+    color: #6c757d;
+    margin-bottom: 25px;
+    font-size: 15px;
+  }
+
+  .service-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px 25px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group.full-width {
+    grid-column: span 2;
+  }
+
+  label {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #333;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  select {
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 3px rgba(0,123,255,0.3);
+  }
+
+  .btn-submit {
+    margin-top: 20px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.3s ease;
+  }
+
+  .btn-submit:hover {
+    background-color: #218838;
+  }
+
+  @media (max-width: 600px) {
+    .form-container {
+      padding: 20px;
+    }
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+{% endblock %}
