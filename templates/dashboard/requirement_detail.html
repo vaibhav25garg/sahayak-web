@@ -1,0 +1,149 @@
+<!-- templates/dashboard/requirement_detail.html -->
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Requirement Detail{% endblock %}
+{% block page_title %}Requirement - {{ requirement.requirement_id }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Back Button -->
+    <div class="mb-3">
+        <a href="{% url 'dashboard:task_log_history' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i> Back to Logs
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i> Requirement Details</h5>
+                    <span class="badge bg-light text-dark">{{ requirement.status|title }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <div class="alert alert-info">
+                                <strong>Requirement ID:</strong> {{ requirement.requirement_id }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Customer Name:</strong>
+                            <p class="mb-2">{{ requirement.name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Phone Number:</strong>
+                            <p class="mb-2">{{ requirement.number }}</p>
+                        </div>
+                        <div class="col-md-12">
+                            <strong>Location:</strong>
+                            <p class="mb-2">{{ requirement.location }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Category:</strong>
+                            <p class="mb-2">
+                                {% if requirement.category %}
+                                    <span class="badge bg-info">{{ requirement.category.name }}</span>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% if requirement.scheduled_date %}
+                        <div class="col-md-6">
+                            <strong>Scheduled Date:</strong>
+                            <p class="mb-2">{{ requirement.scheduled_date|date:"d M Y, h:i A" }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+
+                    <!-- Create Task Button -->
+                    {% if requirement.status == 'pending' %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        This requirement is pending. Create a task to proceed.
+                    </div>
+                    <a href="{% url 'dashboard:task_create_from_requirement' requirement.id %}" class="btn btn-success">
+                        <i class="fas fa-plus-circle me-2"></i> Create Task from Requirement
+                    </a>
+                    {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        This requirement has been fulfilled.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Related Tasks -->
+            {% if related_tasks %}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-tasks me-2"></i> Related Tasks</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Task ID</th>
+                                    <th>Category</th>
+                                    <th>Worker</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for task in related_tasks %}
+                                <tr>
+                                    <td>#{{ task.id }}</td>
+                                    <td>{{ task.category.name }}</td>
+                                    <td>
+                                        {% if task.worker %}
+                                            {{ task.worker.name }}
+                                        {% else %}
+                                            <em>Unassigned</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ task.status }}">
+                                            {{ task.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'dashboard:task_detail' task.id %}" class="btn btn-sm btn-info">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Created:</strong><br>{{ requirement.created_at|date:"d M Y, h:i A" }}</p>
+                    <p><strong>Last Updated:</strong><br>{{ requirement.updated_at|date:"d M Y, h:i A" }}</p>
+                    <p><strong>Status:</strong><br>
+                        <span class="badge bg-{% if requirement.status == 'fulfilled' %}success{% elif requirement.status == 'pending' %}warning{% else %}info{% endif %}">
+                            {{ requirement.status|title }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,9 +1,29 @@
 # apps/tasks/models.py
+import string
+import random
 from django.db import models
 from apps.categories.models import Category
 from apps.workers.models import Worker
 
+
+def generate_random_id(length=None):
+    """Generate random alphanumeric ID (15–20 chars)."""
+    if length is None:
+        length = random.randint(15, 20)  # dynamic length
+
+    letters = string.ascii_uppercase + string.digits
+    return ''.join(random.choice(letters) for _ in range(length))
+
+
 class Task(models.Model):
+    # Custom Primary Key
+    id = models.CharField(
+        primary_key=True,
+        max_length=25,
+        editable=False,
+        unique=True
+    )
+
     STATUS_CHOICES = (
         ('pending', 'Pending'),
         ('scheduled', 'Scheduled'),
@@ -62,5 +82,18 @@ class Task(models.Model):
         db_table = 'tasks'
         ordering = ['-created_at']
     
+    def save(self, *args, **kwargs):
+        """Generate unique random ID only once when the task is created."""
+        if not self.id:
+            new_id = generate_random_id()
+
+            # ensure uniqueness
+            while Task.objects.filter(id=new_id).exists():
+                new_id = generate_random_id()
+
+            self.id = new_id
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Task #{self.id} - {self.cust_name} ({self.status})"

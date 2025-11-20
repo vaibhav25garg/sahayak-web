@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.db.models import Q, Count
 from django.utils import timezone
 from datetime import datetime, timedelta
+from apps.locations.utils import find_best_matching_location
 
 from apps.workers.models import Worker
 from apps.tasks.models import Task
@@ -27,24 +28,28 @@ from apps.locations.models import Location
 # ============================================================
 
 def admin_login(request):
-    """Custom admin login page"""
     if request.user.is_authenticated:
-        return redirect('dashboard:home')
-    
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        
+        return redirect("dashboard:home")
+
+    # Session expired
+    msg = None
+    if request.GET.get("session_expired"):
+        msg = "Your session expired. Please login again."
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
         user = authenticate(request, username=username, password=password)
-        
-        if user is not None and user.is_staff:
+
+        if user and user.is_staff:
             login(request, user)
-            messages.success(request, f'Welcome back, {user.username}!')
-            return redirect('dashboard:home')
+            return redirect("dashboard:home")
         else:
-            messages.error(request, 'Invalid credentials or insufficient permissions')
-    
-    return render(request, 'dashboard/login.html')
+            msg = "Invalid username or password."
+
+    return render(request, "dashboard/login.html", {"msg": msg})
+
 
 
 @login_required(login_url='dashboard:login')
@@ -103,38 +108,38 @@ def dashboard_home(request):
 # WORKER MANAGEMENT (BUCKET 1)
 # ============================================================
 
-@login_required(login_url='dashboard:login')
-def worker_list(request):
-    """List all workers with filters"""
-    workers = Worker.objects.all().select_related('primary_category', 'location')
+# @login_required(login_url='dashboard:login')
+# def worker_list(request):
+#     """List all workers with filters"""
+#     workers = Worker.objects.all().select_related('primary_category', 'location')
     
-    # Filters
-    status = request.GET.get('status')
-    category = request.GET.get('category')
-    search = request.GET.get('search')
+#     # Filters
+#     status = request.GET.get('status')
+#     category = request.GET.get('category')
+#     search = request.GET.get('search')
     
-    if status:
-        workers = workers.filter(verification_status=status)
-    if category:
-        workers = workers.filter(primary_category_id=category)
-    if search:
-        workers = workers.filter(
-            Q(name__icontains=search) | 
-            Q(phone__icontains=search) |
-            Q(aadhar_no__icontains=search)
-        )
+#     if status:
+#         workers = workers.filter(verification_status=status)
+#     if category:
+#         workers = workers.filter(primary_category_id=category)
+#     if search:
+#         workers = workers.filter(
+#             Q(name__icontains=search) | 
+#             Q(phone__icontains=search) |
+#             Q(aadhar_no__icontains=search)
+#         )
     
-    categories = Category.objects.filter(category_type='primary')
+#     categories = Category.objects.filter(category_type='primary')
     
-    context = {
-        'workers': workers,
-        'categories': categories,
-        'selected_status': status,
-        'selected_category': category,
-        'search_query': search,
-    }
+#     context = {
+#         'workers': workers,
+#         'categories': categories,
+#         'selected_status': status,
+#         'selected_category': category,
+#         'search_query': search,
+#     }
     
-    return render(request, 'dashboard/worker_list.html', context)
+#     return render(request, 'dashboard/worker_list.html', context)
 
 
 @login_required(login_url='dashboard:login')
@@ -383,102 +388,231 @@ def worker_pdf(request, pk):
     response['Content-Disposition'] = f'attachment; filename="Worker_{worker.name}.pdf"'
     return response
 
+# Replace these functions in apps/dashboard/views.py
+
 @login_required(login_url='dashboard:login')
-def worker_add(request):
-    if request.method == "POST":
-
-        name = request.POST.get('name')
-        phone = request.POST.get('number')  # FIXED
-        whatsapp_no = request.POST.get('whatsapp_no')
-        age = request.POST.get('age')
-        aadhar_no = request.POST.get('aadhaar_no')  # FIXED
-        primary_category_id = request.POST.get('category')  # FIXED
-        location_id = request.POST.get('location')
-
-        primary_category = Category.objects.filter(id=primary_category_id).first()
-        location = Location.objects.filter(id=location_id).first()
-
-        Worker.objects.create(
-            name=name,
-            phone=phone,
-            whatsapp_no=whatsapp_no,
-            age=age,
-            aadhar_no=aadhar_no,
-            primary_category=primary_category,
-            location=location
+def worker_list(request):
+    """List all workers with filters"""
+    workers = Worker.objects.all().select_related('primary_category', 'location')
+    
+    # Filters
+    status = request.GET.get('status')
+    category = request.GET.get('category')
+    search = request.GET.get('search')
+    
+    if status:
+        workers = workers.filter(verification_status=status)
+    if category:
+        workers = workers.filter(primary_category_id=category)
+    if search:
+        workers = workers.filter(
+            Q(name__icontains=search) | 
+            Q(phone__icontains=search) |
+            Q(aadhar_no__icontains=search)
         )
-
-        return redirect('dashboard:worker_list')  # FIXED
-
-    workers = Worker.objects.all()
-    categories = Category.objects.all()
-    locations = Location.objects.all()
-
-    return render(request, 'dashboard/worker_list.html', {
+    
+    categories = Category.objects.filter(category_type='primary')
+    locations = Location.objects.all()  # ADD THIS LINE!
+    
+    context = {
         'workers': workers,
         'categories': categories,
-        'locations': locations,
-    })
+        'locations': locations,  # ADD THIS LINE!
+        'selected_status': status,
+        'selected_category': category,
+        'search_query': search,
+    }
+    
+    return render(request, 'dashboard/worker_list.html', context)
 
 
-# --- UPDATE Worker ---
 @login_required(login_url='dashboard:login')
-def worker_edit(request, pk):
-    worker = get_object_or_404(Worker, pk=pk)
-    categories = Category.objects.all()
-    locations = Location.objects.all()
-
+def worker_add(request):
+    """Add new worker with all fields and files"""
+    
     if request.method == "POST":
-        phone = request.POST.get('phone')
+        phone = request.POST.get("phone")
+        
         if not phone:
             messages.error(request, "Phone number is required.")
-            return redirect('dashboard:worker_update', pk=pk)
+            return redirect("dashboard:worker_list")
+        
+        print("help me to run success full")
+        try:
+            # Create worker instance
+            worker = Worker()
+            
+            print("case 1")
+            # Basic fields
+            worker.name = request.POST.get("name")
+            worker.phone = phone
+            worker.whatsapp_no = request.POST.get("whatsapp_no", "")
+            
+            print("case 2")
 
-        worker.name = request.POST.get('name', worker.name)
-        worker.phone = phone
-        worker.whatsapp_no = request.POST.get('whatsapp_no', worker.whatsapp_no)
-        worker.age = request.POST.get('age', worker.age)
-        worker.aadhar_no = request.POST.get('aadhar_no', worker.aadhar_no)
-        category_id = request.POST.get('primary_category')
-        location_id = request.POST.get('location')
+            print(worker)
+            # Age - handle empty value
+            age = request.POST.get("age")
+            if age:
+                worker.age = int(age)
+            
+            # Aadhar - FIXED FIELD NAME
+            worker.aadhar_no = request.POST.get("aadhar_no", "")
+            
+            # Geo Location Link - NEW!
+            worker.geo_location_link = request.POST.get("geo_location_link", "")
+            
+            # Category
+            category_id = request.POST.get("primary_category")
+            if category_id:
+                worker.primary_category = Category.objects.filter(id=category_id).first()
+            
+            # Location
+            address_input = request.POST.get("address")
 
-        worker.primary_category = Category.objects.filter(id=category_id).first()
-        worker.location = Location.objects.filter(id=location_id).first()
-        worker.save()
+            print(worker)
 
-        messages.success(request, "Worker details updated successfully.")
-        return redirect('dashboard:worker_list')
-
-    return render(request, 'dashboard/worker_update.html', {
-        'worker': worker,
-        'categories': categories,
-        'locations': locations, 
-    })
+            print(address_input)
+             # Apply fuzzy logic
+            matched_location = find_best_matching_location(address_input)
 
 
-# --- DELETE Worker ---
+            print(matched_location)
+            if matched_location:
+                worker.location = matched_location
+            else:
+                messages.error(request, "Service not available for this location. Please enter a correct address.")
+                return redirect('dashboard:worker_list')
+            
+            # Verification Status - NEW!
+            worker.verification_status = request.POST.get("verification_status", "pending")
+            
+            # Ranking Score - NEW!
+            ranking_score = request.POST.get("ranking_score")
+            if ranking_score:
+                worker.ranking_score = float(ranking_score)
+            else:
+                worker.ranking_score = 0.0
+            
+            # Handle file uploads - NEW!
+            if 'aadhar_img_front' in request.FILES:
+                worker.aadhar_img_front = request.FILES['aadhar_img_front']
+            
+            if 'aadhar_img_back' in request.FILES:
+                worker.aadhar_img_back = request.FILES['aadhar_img_back']
+            
+            if 'selfie_img' in request.FILES:
+                worker.selfie_img = request.FILES['selfie_img']
+            
+            # Save worker first
+            worker.save()
+            
+            # Handle secondary categories (Many-to-Many) - NEW!
+            secondary_cats = request.POST.getlist('secondary_categories')
+            if secondary_cats:
+                worker.secondary_categories.set(secondary_cats)
+            
+            messages.success(request, f"Worker {worker.name} added successfully!")
+            return redirect("dashboard:worker_list")
+            
+        except Exception as e:
+            messages.error(request, f"Error adding worker: {str(e)}")
+            return redirect("dashboard:worker_list")
+    
+    return redirect("dashboard:worker_list")
+
+
+@login_required(login_url='dashboard:login')
+def worker_edit(request, pk):
+    """Update worker with all fields and files"""
+    worker = get_object_or_404(Worker, pk=pk)
+    
+    if request.method == "POST":
+        phone = request.POST.get('phone')
+        
+        if not phone:
+            messages.error(request, "Phone number is required.")
+            return redirect('dashboard:worker_list')
+        
+        try:
+            # Basic fields
+            worker.name = request.POST.get('name', worker.name)
+            worker.phone = phone
+            worker.whatsapp_no = request.POST.get('whatsapp_no', worker.whatsapp_no)
+            
+            # Age - handle empty value
+            age = request.POST.get('age')
+            if age:
+                worker.age = int(age)
+            
+            # Aadhar
+            worker.aadhar_no = request.POST.get('aadhar_no', worker.aadhar_no)
+            
+            # Geo Location Link - NEW!
+            worker.geo_location_link = request.POST.get('geo_location_link', worker.geo_location_link)
+            
+            # Category
+            category_id = request.POST.get('primary_category')
+            if category_id:
+                worker.primary_category = Category.objects.filter(id=category_id).first()
+            
+            # Location
+            address_input = request.POST.get('location')
+              # Apply fuzzy logic
+            matched_location = find_best_matching_location(address_input)
+
+            if matched_location:
+                worker.location = matched_location
+            else:
+                messages.error(request, "Service not available for this location. Please enter a correct address.")
+                return redirect('dashboard:worker_list')
+            
+            # Verification Status - NEW!
+            verification_status = request.POST.get('verification_status')
+            if verification_status:
+                worker.verification_status = verification_status
+            
+            # Ranking Score - NEW!
+            ranking_score = request.POST.get('ranking_score')
+            if ranking_score:
+                worker.ranking_score = float(ranking_score)
+            
+            # Handle file uploads - NEW!
+            if 'aadhar_img_front' in request.FILES:
+                worker.aadhar_img_front = request.FILES['aadhar_img_front']
+            
+            if 'aadhar_img_back' in request.FILES:
+                worker.aadhar_img_back = request.FILES['aadhar_img_back']
+            
+            if 'selfie_img' in request.FILES:
+                worker.selfie_img = request.FILES['selfie_img']
+            
+            # Save worker
+            worker.save()
+            
+            # Handle secondary categories (Many-to-Many) - NEW!
+            secondary_cats = request.POST.getlist('secondary_categories')
+            if secondary_cats:
+                worker.secondary_categories.set(secondary_cats)
+            else:
+                worker.secondary_categories.clear()
+            
+            messages.success(request, f"Worker {worker.name} updated successfully!")
+            return redirect('dashboard:worker_list')
+            
+        except Exception as e:
+            messages.error(request, f"Error updating worker: {str(e)}")
+            return redirect('dashboard:worker_list')
+    
+    # GET request - this shouldn't happen with modal, but just in case
+    return redirect('dashboard:worker_list')
+
+
 @login_required(login_url='dashboard:login')
 def worker_delete(request, pk):
+    """Delete worker"""
     worker = get_object_or_404(Worker, pk=pk)
+    worker_name = worker.name
     worker.delete()
-    return redirect('worker_list')
-
-# --- Login expired error handeled
-def admin_login(request):
-    msg = None
-
-    # Handle session expired
-    if request.GET.get("session_expired"):
-        msg = "Your session expired or system restarted. Please login again."
-
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-
-        if username == "sahayakcircle" and password == "Sahayak@123":
-            request.session["admin_logged_in"] = True
-            return redirect("dashboard:home")
-        else:
-            msg = "Invalid login credentials."
-
-    return render(request, "dashboard/login.html", {"msg": msg})
+    messages.success(request, f"Worker {worker_name} deleted successfully!")
+    return redirect('dashboard:worker_list')

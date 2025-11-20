@@ -196,28 +196,31 @@
                               <label>Primary Category</label>
                             </div>
 
-                            <div class="mb-3">
-                              <label class="form-label fw-semibold">Secondary Categories</label>
-                              <select name="secondary_categories" class="form-select" multiple>
-                                {% for c in categories %}
-                                <option value="{{ c.id }}" {% if c in w.secondary_categories.all %}selected{% endif %}>
-                                  {{ c.name }}
-                                </option>
-                                {% endfor %}
-                              </select>
-                              <small>Select multiple subcategories</small>
-                            </div>
+                           <div class="mb-3">
+                            <label class="form-label fw-semibold">Secondary Categories</label>
+                            <select name="secondary_categories" class="form-select" multiple>
 
-                            <div class="form-floating mb-3">
-                              <select class="form-select" name="location">
-                                {% for loc in locations %}
-                                <option value="{{ loc.id }}" {% if w.location and w.location.id == loc.id %}selected{% endif %}>
-                                  {{ loc.area_code }} - {{ loc.city }}
-                                </option>
-                                {% endfor %}
-                              </select>
-                              <label>Location</label>
-                            </div>
+                             {% for c in subcategories %}
+                              <option value="{{ c.id }}" {% if c in w.secondary_categories.all %}selected{% endif %}>
+                                  {{ c.name }}
+                              </option>
+                              {% endfor %}
+
+                            </select>
+                            <small>Select multiple subcategories</small>
+                          </div>
+
+                          <div class="form-floating mb-3">
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                name="location" 
+                                value="{{ w.location.street_address }}" 
+                                placeholder="Enter Location"
+                            >
+                            <label>Location</label>
+                        </div>
+
 
                             <div class="form-floating mb-3">
                               <select class="form-select" name="verification_status">
@@ -324,9 +327,9 @@
                             <input type="number" name="age" class="form-control" placeholder="Age">
                         </div>
 
-                        <!-- ADDRESS -->
+                       <!-- ADDRESS -->
                         <div class="col-md-12">
-                            <textarea name="address" class="form-control" placeholder="Address"></textarea>
+                            <textarea name="address" class="form-control" placeholder="House No, Street, Area"></textarea>
                         </div>
 
                         <!-- AADHAR NUMBER -->

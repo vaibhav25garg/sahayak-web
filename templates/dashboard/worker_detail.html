@@ -56,6 +56,7 @@
                             <strong>Location:</strong>
                             <p class="mb-2">
                                 {% if worker.location %}
+                                    {{ worker.location.street_address }}
                                     {{ worker.location.city }}, {{ worker.location.state }}
                                 {% else %}
                                     N/A
