@@ -3,7 +3,9 @@
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h3>🧰 Task Management</h3>
-    <a href="#" class="btn btn-primary">+ Create Task</a>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+      + Create Task
+    </button>
   </div>
 
   <!-- Filters -->
@@ -47,7 +49,7 @@
       {% for t in tasks %}
       <tr>
         <td>{{ forloop.counter }}</td>
-        <td>{{ t.cust_name }}<br><small>{{ t.cust_phone }}</small></td>
+        <td>{{ t.cust_name }}<br></td>
         <td>{{ t.category.name }}</td>
         <td>{% if t.worker %}{{ t.worker.name }}{% else %}<em>Unassigned</em>{% endif %}</td>
         <td>
@@ -56,7 +58,16 @@
           </span>
         </td>
         <td>{{ t.schedule_date|date:"d M Y" }}</td>
-        <td><a href="{% url 'dashboard:task_detail' t.id %}" class="btn btn-sm btn-info">View</a></td>
+        <td>
+          <a href="{% url 'dashboard:task_detail' t.id %}" class="btn btn-sm btn-info">View</a>
+
+          <button class="btn btn-sm btn-primary"
+                onclick="openEditTaskModal('{{ t.id }}')">
+            Edit
+        </button>
+
+      </td>
+
       </tr>
       {% empty %}
       <tr><td colspan="7" class="text-center">No tasks found.</td></tr>
@@ -64,4 +75,199 @@
     </tbody>
   </table>
 </div>
+
+<!-- Create Task Modal -->
+<div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form method="POST" enctype="multipart/form-data" action="{% url 'dashboard:task_add' %}">
+        {% csrf_token %}
+
+        <div class="modal-body">
+
+          <div class="row g-3">
+
+            <!-- Customer Fields -->
+            <div class="col-md-6">
+              <label class="form-label">Customer Name</label>
+              <input type="text" name="cust_name" class="form-control" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Phone Number</label>
+              <input type="text" name="cust_phone" class="form-control" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">WhatsApp Number</label>
+              <input type="text" name="cust_whatsapp" class="form-control">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Pincode</label>
+              <input type="text" name="pincode" class="form-control" required>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Location</label>
+              <textarea name="cust_location" class="form-control" required></textarea>
+            </div>
+
+            <!-- Category -->
+            <div class="col-md-6">
+              <label class="form-label">Category</label>
+              <select name="category" class="form-select" required>
+                <option value="">Select Category</option>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Subcategories -->
+            <div class="col-md-6">
+              <label class="form-label">Subcategories</label>
+              <select name="subcategories" class="form-select" multiple>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="col-12">
+              <label class="form-label">Additional Info</label>
+              <textarea name="additional_info" class="form-control"></textarea>
+            </div>
+
+            <!-- Image -->
+            <div class="col-12">
+              <label class="form-label">Task Image</label>
+              <input type="file" name="task_image" class="form-control">
+            </div>
+
+            <!-- Worker -->
+            <div class="col-md-6">
+              <label class="form-label">Assign Worker</label>
+              <select name="worker" class="form-select">
+                <option value="">Unassigned</option>
+                {% for worker in workers %}
+                <option value="{{ worker.id }}">{{ worker.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            
+            <button class="btn btn-sm btn-outline-primary"
+                    onclick="openAssignWorkerModal('{{ t.id }}')">
+              Assign Worker
+            </button>
+
+            <!-- Schedule Date -->
+            <div class="col-md-6">
+              <label class="form-label">Schedule Date</label>
+              <input type="datetime-local" name="schedule_date" class="form-control" required>
+            </div>
+
+            <!-- Status -->
+            <div class="col-md-6">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-select">
+                <option value="pending">Pending</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <!-- Payment -->
+            <div class="col-md-6">
+              <label class="form-label">Payment Received</label>
+              <input type="number" step="0.01" name="payment_received_amt" class="form-control" value="0">
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Task Modal -->
+<div class="modal fade" id="editTaskModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body" id="editTaskFormContainer">
+        <!-- AJAX Loaded Form Will Appear Here -->
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Global assign worker modal (empty body - content loaded via AJAX) -->
+<div class="modal fade" id="assignWorkerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Assign Worker</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="assignWorkerModalBody">
+         <div class="text-center py-4"><div class="spinner-border"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+function openEditTaskModal(taskId) {
+    fetch(`/dashboard/tasks/edit/${taskId}/`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById("editTaskFormContainer").innerHTML = html;
+            new bootstrap.Modal(document.getElementById("editTaskModal")).show();
+        });
+}
+
+// helper to get csrf token cookie
+function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+}
+
+function openAssignWorkerModal() {
+    fetch('/dashboard/tasks/assign-workers/')
+      .then(r => r.text())
+        .then(html => {
+            document.getElementById("assignWorkerModalBody").innerHTML = html;
+            new bootstrap.Modal(
+                document.getElementById("assignWorkerModal")
+            ).show();
+        });
+}
+
+</script>
+
+
 {% endblock %}

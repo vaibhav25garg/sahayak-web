@@ -4,7 +4,7 @@ import random
 from django.db import models
 from apps.categories.models import Category
 from apps.workers.models import Worker
-
+from apps.locations.models import Location   # import Location model
 
 def generate_random_id(length=None):
     """Generate random alphanumeric ID (15–20 chars)."""
@@ -38,7 +38,15 @@ class Task(models.Model):
     cust_whatsapp = models.CharField(max_length=15, blank=True, null=True)
     cust_location = models.TextField()
     pincode = models.CharField(max_length=10)
-    
+
+    location = models.ForeignKey(
+        Location,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='tasks'
+    )
+
     # Task Details
     category = models.ForeignKey(
         Category,
@@ -65,7 +73,8 @@ class Task(models.Model):
     worker_name = models.CharField(max_length=200, blank=True, null=True)
     
     # Scheduling
-    schedule_date = models.DateTimeField()
+    schedule_date = models.DateTimeField(null=True, blank=True)
+
     day_service_done = models.DateField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     

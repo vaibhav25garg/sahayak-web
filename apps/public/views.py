@@ -70,7 +70,7 @@ def worker_registration(request):
             else:
                 messages.error(request, "Service not available for this location. Please enter a correct address.")
                 return redirect('public:worker_registration')
-
+        
             # Images
             worker.aadhar_img_front = request.FILES.get('aadhar_img_front')
             worker.aadhar_img_back = request.FILES.get('aadhar_img_back')

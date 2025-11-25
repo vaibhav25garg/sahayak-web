@@ -19,10 +19,15 @@ from django.template.loader import render_to_string
 from weasyprint import HTML
 from apps.workers.models import Worker
 
+import json
+import requests
 from django.shortcuts import render, redirect
 from apps.workers.models import Worker
 from apps.categories.models import Category
 from apps.locations.models import Location
+from django.http import JsonResponse, HttpResponseBadRequest
+
+from django.views.decorators.http import require_POST, require_GET
 # ============================================================
 # LOGIN/LOGOUT VIEWS
 # ============================================================
@@ -437,18 +442,15 @@ def worker_add(request):
             messages.error(request, "Phone number is required.")
             return redirect("dashboard:worker_list")
         
-        print("help me to run success full")
         try:
             # Create worker instance
             worker = Worker()
             
-            print("case 1")
             # Basic fields
             worker.name = request.POST.get("name")
             worker.phone = phone
             worker.whatsapp_no = request.POST.get("whatsapp_no", "")
             
-            print("case 2")
 
             print(worker)
             # Age - handle empty value
@@ -470,14 +472,11 @@ def worker_add(request):
             # Location
             address_input = request.POST.get("address")
 
-            print(worker)
 
-            print(address_input)
              # Apply fuzzy logic
             matched_location = find_best_matching_location(address_input)
 
 
-            print(matched_location)
             if matched_location:
                 worker.location = matched_location
             else:
@@ -616,3 +615,105 @@ def worker_delete(request, pk):
     worker.delete()
     messages.success(request, f"Worker {worker_name} deleted successfully!")
     return redirect('dashboard:worker_list')
+
+
+@login_required(login_url='dashboard:login')
+def task_add(request):
+    categories = Category.objects.all()
+    workers = Worker.objects.all()
+
+    if request.method == "POST":
+        task = Task()
+        task.cust_name = request.POST.get("cust_name")
+        task.cust_phone = request.POST.get("cust_phone")
+        task.cust_whatsapp = request.POST.get("cust_whatsapp")
+        task.pincode = request.POST.get("pincode")
+        task.cust_location = request.POST.get("cust_location")
+
+        category = request.POST.get("category")
+        task.category_id = category if category else None
+
+        task.additional_info = request.POST.get("additional_info")
+        task.payment_received_amt = request.POST.get("payment_received_amt") or 0
+
+        worker = request.POST.get("worker")
+        task.worker_id = worker if worker else None
+        
+        schedule_date = request.POST.get("schedule_date")
+        task.schedule_date = schedule_date if schedule_date else None
+        task.status = request.POST.get("status")
+
+        if request.FILES.get("task_image"):
+            task.task_image = request.FILES["task_image"]
+
+        task.save()
+
+        messages.success(request, "Task created successfully.")
+        return redirect("dashboard:task_list")
+
+    return render(request, "dashboard/task_list.html", {
+        "categories": categories,
+        "workers": workers,
+    })
+
+def edit_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    categories = Category.objects.all()
+    workers = Worker.objects.all()
+
+    if request.method == "POST":
+        task.cust_name = request.POST.get("cust_name")
+        task.cust_phone = request.POST.get("cust_phone")
+        task.cust_whatsapp = request.POST.get("cust_whatsapp")
+        task.pincode = request.POST.get("pincode")
+        task.cust_location = request.POST.get("cust_location")
+        task.additional_info = request.POST.get("additional_info")
+        task.payment_received_amt = request.POST.get("payment_received_amt") or 0
+        
+        category = request.POST.get("category")
+        task.category_id = category if category else None
+
+        worker = request.POST.get("worker")
+        task.worker_id = worker if worker else None
+
+        schedule_date = request.POST.get("schedule_date")
+        task.schedule_date = schedule_date if schedule_date else None
+
+        task.status = request.POST.get("status")
+
+        if request.FILES.get("task_image"):
+            task.task_image = request.FILES["task_image"]
+
+        task.save()
+
+        # update M2M
+        subcat_ids = request.POST.getlist("subcategories")
+        task.subcategories.set(subcat_ids)
+
+        # 🔥 show success message
+        messages.success(request, "Task updated successfully!")
+
+        # 🔥 redirect to task list page
+        return redirect("dashboard:task_list")
+
+    return render(request, "dashboard/task_edit_form.html", {
+        "task": task,
+        "categories": categories,
+        "workers": workers,
+    })
+
+def assign_worker_popup(request):
+    q = request.GET.get("q")
+    category = request.GET.get("category")
+
+    workers = Worker.objects.all()
+
+    if category:
+        workers = workers.filter(category_id=category)
+
+    if q:
+        workers = workers.filter(name__icontains=q)
+
+    return render(request, "dashboard/assign_worker_popup.html", {
+        "workers": workers,
+    })

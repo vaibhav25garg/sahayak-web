@@ -6,22 +6,25 @@ from .models import Task
 class TaskAdmin(admin.ModelAdmin):
     list_display = [
         'id', 'cust_name', 'cust_phone', 'category',
-        'worker', 'status', 'schedule_date', 'payment_received_amt'
+        'worker', 'status', 'schedule_date', 'payment_received_amt',
+        'location'   # NEW
     ]
+
     list_filter = [
         'status', 'category', 'schedule_date',
-        'created_at'
+        'created_at', 'location'  # NEW
     ]
+
     search_fields = ['cust_name', 'cust_phone', 'pincode']
     readonly_fields = ['created_at', 'updated_at']
     filter_horizontal = ['subcategories']
     date_hierarchy = 'schedule_date'
-    
+
     fieldsets = (
         ('Customer Information', {
             'fields': (
                 'cust_name', 'cust_phone', 'cust_whatsapp',
-                'cust_location', 'pincode'
+                'cust_location', 'pincode', 'location'  # NEW
             )
         }),
         ('Task Details', {
@@ -48,7 +51,7 @@ class TaskAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-    
+
     actions = ['mark_as_completed', 'mark_as_active']
     
     def mark_as_completed(self, request, queryset):
