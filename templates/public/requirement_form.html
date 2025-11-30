@@ -11,78 +11,106 @@
 
     <div class="form-grid">
       <div class="form-group">
-        <label>Your Name</label>
-        <input type="text" name="name" placeholder="Enter your full name" required>
+        <label>Your Name <span class="required">*</span></label>
+        <input type="text" name="name" id="nameInput" placeholder="e.g., Priya Sharma" 
+               pattern="[A-Za-z\s]{2,50}" title="Name should contain only letters and spaces (2-50 characters)" required>
+        <small class="error-msg" id="name-error"></small>
       </div>
 
       <div class="form-group">
-        <label>Phone Number</label>
-        <input type="text" name="phone" placeholder="Enter your phone number" required>
+        <label>Phone Number <span class="required">*</span></label>
+        <input type="tel" name="phone" id="phoneInput" placeholder="e.g., 9876543210" 
+               pattern="[6-9][0-9]{9}" title="Enter valid 10-digit mobile number" 
+               maxlength="10" required>
+        <small class="error-msg" id="phone-error"></small>
       </div>
 
       <div class="form-group">
-        <label>City</label>
-        <input type="text" name="city" placeholder="Enter your city" required>
+        <label>City <span class="required">*</span></label>
+        <input type="text" name="city" id="cityInput" placeholder="e.g., Mumbai" 
+               pattern="[A-Za-z\s]{2,50}" title="City name should contain only letters" required>
+        <small class="error-msg" id="city-error"></small>
       </div>
 
       <div class="form-group">
-        <label>Pincode</label>
-        <input type="text" name="pincode" placeholder="Enter area pincode" required>
+        <label>Pincode <span class="required">*</span></label>
+        <input type="text" name="pincode" id="pincodeInput" placeholder="e.g., 400001" 
+               pattern="[1-9][0-9]{5}" title="Enter valid 6-digit pincode" 
+               maxlength="6" required>
+        <small class="error-msg" id="pincode-error"></small>
       </div>
 
       <div class="form-group full-width">
-        <label>Full Address</label>
-        <input type="text" name="address" placeholder="House No, Street, Locality" required>
+        <label>Full Address <span class="required">*</span></label>
+        <input type="text" name="address" id="addressInput" placeholder="e.g., Flat 301, Sunrise Apartments, MG Road" 
+               minlength="10" maxlength="200" title="Enter complete address" required>
+        <small class="error-msg" id="address-error"></small>
       </div>
 
       <div class="form-group full-width">
         <label>Landmark (Optional)</label>
-        <input type="text" name="landmark" placeholder="Nearby landmark">
+        <input type="text" name="landmark" id="landmarkInput" placeholder="e.g., Near City Mall" 
+               maxlength="100">
+        <small class="helper-text">Help us locate you better</small>
       </div>
 
       <div class="form-group full-width">
-        <label>Service Category</label>
-        <select name="category" required>
-          <option value="">Select a Category</option>
+        <label>Service Category <span class="required">*</span></label>
+        <select name="category" id="categorySelect" required>
+          <option value="">-- Select Service You Need --</option>
           {% for cat in categories %}
           <option value="{{ cat.id }}">{{ cat.name }}</option>
           {% endfor %}
         </select>
+        <small class="error-msg" id="category-error"></small>
       </div>
 
       <div class="form-group">
         <label>Preferred Date</label>
-        <input type="date" name="preferred_date">
+        <input type="date" name="preferred_date" id="dateInput" 
+               title="Select your preferred service date">
       </div>
     </div>
 
-    <button type="submit" class="btn-submit">Submit Request</button>
+    <button type="submit" class="btn-submit">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      Submit Service Request
+    </button>
   </form>
 </div>
 
 <style>
+  /* Container */
   .form-container {
     background: #ffffff;
-    padding: 30px 40px;
-    border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    max-width: 700px;
-    margin: 0 auto;
+    padding: 35px 45px;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    max-width: 750px;
+    margin: 40px auto;
   }
 
+  /* Title */
   .form-title {
     text-align: center;
-    color: #007bff;
-    margin-bottom: 5px;
+    color: #28a745;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
   }
 
   .form-subtitle {
     text-align: center;
     color: #6c757d;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
     font-size: 15px;
+    line-height: 1.5;
   }
 
+  /* Form */
   .service-form {
     display: flex;
     flex-direction: column;
@@ -91,65 +119,326 @@
 
   .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px 25px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 25px;
   }
 
   .form-group {
     display: flex;
     flex-direction: column;
+    position: relative;
   }
 
   .form-group.full-width {
     grid-column: span 2;
   }
 
+  /* Labels */
   label {
-    font-weight: 600;
-    margin-bottom: 5px;
+    font-weight: 500;
+    margin-bottom: 6px;
     color: #333;
+    font-size: 15px;
   }
 
+  .required {
+    color: #dc3545;
+    font-weight: bold;
+  }
+
+  /* Inputs */
   input[type="text"],
+  input[type="tel"],
   input[type="date"],
   select {
-    padding: 10px;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    font-size: 14px;
+    padding: 13px;
+    border: 1px solid #d4d4d4;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
   }
 
   input:focus, select:focus {
     outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 3px rgba(0,123,255,0.3);
+    border-color: #28a745;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
   }
 
+  input.error, select.error {
+    border-color: #dc3545;
+  }
+
+  input.success, select.success {
+    border-color: #28a745;
+  }
+
+  /* Helper & Error Messages */
+  .helper-text {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #6c757d;
+  }
+
+  .error-msg {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #dc3545;
+    font-weight: 500;
+    min-height: 18px;
+  }
+
+  /* Submit Button */
   .btn-submit {
-    margin-top: 20px;
-    background-color: #28a745;
+    margin-top: 25px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: #fff;
     border: none;
-    padding: 12px 20px;
-    border-radius: 6px;
-    font-size: 16px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-size: 17px;
+    font-weight: 600;
     cursor: pointer;
     width: 100%;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .btn-submit:hover {
-    background-color: #218838;
+    background: linear-gradient(135deg, #218838 0%, #1ba87d 100%);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    transform: translateY(-2px);
   }
 
-  @media (max-width: 600px) {
+  .btn-submit:active {
+    transform: translateY(0);
+  }
+
+  .btn-submit:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 650px) {
     .form-container {
-      padding: 20px;
+      padding: 25px 20px;
+      margin: 20px auto;
     }
+    
     .form-grid {
       grid-template-columns: 1fr;
     }
+    
+    .form-group.full-width {
+      grid-column: span 1;
+    }
+
+    .form-title {
+      font-size: 24px;
+    }
   }
 </style>
+
+<script>
+// ============================================================
+// FORM VALIDATION FOR SERVICE REQUEST
+// ============================================================
+
+// Validate phone number (only digits, 10 characters)
+document.getElementById("phoneInput").addEventListener("input", function (e) {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+    validateField(e.target);
+});
+
+// Validate pincode (only digits, 6 characters)
+document.getElementById("pincodeInput").addEventListener("input", function (e) {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    validateField(e.target);
+});
+
+// Validate name (only letters and spaces)
+document.getElementById("nameInput").addEventListener("input", function (e) {
+    validateField(e.target);
+});
+
+// Validate city (only letters and spaces)
+document.getElementById("cityInput").addEventListener("input", function (e) {
+    validateField(e.target);
+});
+
+// Set minimum date to today
+const dateInput = document.getElementById("dateInput");
+if (dateInput) {
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.setAttribute('min', today);
+}
+
+// ============================================================
+// FIELD VALIDATION FUNCTION
+// ============================================================
+
+function validateField(input) {
+    const value = input.value.trim();
+    const name = input.name;
+    let errorMsg = '';
+    let isValid = true;
+
+    // Clear previous error
+    const errorElement = document.getElementById(`${name}-error`);
+    if (errorElement) {
+        errorElement.textContent = '';
+    }
+
+    // Skip validation if field is empty and not required
+    if (!value && !input.required) {
+        input.classList.remove('error', 'success');
+        return true;
+    }
+
+    // Validation rules
+    switch (name) {
+        case 'phone':
+            if (value && !/^[6-9][0-9]{9}$/.test(value)) {
+                errorMsg = 'Enter a valid 10-digit mobile number starting with 6-9';
+                isValid = false;
+            }
+            break;
+
+        case 'pincode':
+            if (value && !/^[1-9][0-9]{5}$/.test(value)) {
+                errorMsg = 'Enter a valid 6-digit pincode';
+                isValid = false;
+            }
+            break;
+
+        case 'name':
+        case 'city':
+            if (value && (value.length < 2 || value.length > 50)) {
+                errorMsg = 'Must be between 2 and 50 characters';
+                isValid = false;
+            }
+            if (value && !/^[A-Za-z\s]+$/.test(value)) {
+                errorMsg = 'Should contain only letters and spaces';
+                isValid = false;
+            }
+            break;
+
+        case 'address':
+            if (value && value.length < 10) {
+                errorMsg = 'Please enter complete address (minimum 10 characters)';
+                isValid = false;
+            }
+            break;
+    }
+
+    // Display error message
+    if (errorElement && errorMsg) {
+        errorElement.textContent = errorMsg;
+    }
+
+    // Add visual feedback
+    if (value) {
+        if (isValid) {
+            input.classList.remove('error');
+            input.classList.add('success');
+        } else {
+            input.classList.remove('success');
+            input.classList.add('error');
+        }
+    } else {
+        input.classList.remove('error', 'success');
+    }
+
+    return isValid;
+}
+
+// Attach validation to all inputs on blur
+document.querySelectorAll('input[type="text"], input[type="tel"]').forEach(input => {
+    input.addEventListener('blur', function() {
+        validateField(this);
+    });
+});
+
+// ============================================================
+// FORM SUBMIT VALIDATION
+// ============================================================
+
+document.querySelector('.service-form').addEventListener('submit', function(e) {
+    let isValid = true;
+    const submitBtn = document.querySelector('.btn-submit');
+
+    // Validate all required fields
+    document.querySelectorAll('input[required], select[required]').forEach(input => {
+        if (!input.value.trim()) {
+            isValid = false;
+            input.classList.add('error');
+            
+            const errorElement = document.getElementById(`${input.name}-error`);
+            if (errorElement) {
+                errorElement.textContent = 'This field is required';
+            }
+        } else {
+            if (!validateField(input)) {
+                isValid = false;
+            }
+        }
+    });
+
+    if (!isValid) {
+        e.preventDefault();
+        
+        // Scroll to first error
+        const firstError = document.querySelector('.error');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+
+        // Show alert
+        alert('Please fix all errors before submitting the form.');
+        return false;
+    }
+
+    // Disable submit button to prevent double submission
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px; animation: spin 1s linear infinite;">
+            <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+            <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/>
+        </svg>
+        Submitting...
+    `;
+});
+
+// Add spinner animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+
+// Character counter for address
+const addressInput = document.querySelector('input[name="address"]');
+if (addressInput) {
+    addressInput.addEventListener('input', function() {
+        const length = this.value.length;
+        const errorElement = document.getElementById('address-error');
+        if (errorElement && length > 0 && length < 10) {
+            errorElement.textContent = `Enter at least ${10 - length} more characters`;
+        }
+    });
+}
+
+console.log('✅ Service request form validation initialized');
+</script>
 
 {% endblock %}
