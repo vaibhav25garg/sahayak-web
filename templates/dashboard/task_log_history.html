@@ -22,42 +22,462 @@
   <h5 class="mb-3">📞 Recent Calling Logs</h5>
   <table class="table table-striped align-middle mb-5">
     <thead class="table-dark">
-      <tr><th>#</th><th>Worker</th><th>Category</th><th>Task</th><th>Summary</th><th>Date</th></tr>
+      <tr>
+        <th>#</th>
+        <th>Customer</th>
+        <th>Category</th>
+        <th>Task</th>
+        <th>Worker</th>
+        <th>Summary</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr>
     </thead>
     <tbody>
-      {% for log in calling_logs %}
+     {% for log in calling_logs %}
       <tr>
         <td>{{ forloop.counter }}</td>
-        <td>{{ log.worker.name }}</td>
-        <td>{{ log.category.name }}</td>
-        <td>{% if log.task %}#{{ log.task.id }}{% endif %}</td>
-        <td>{{ log.call_summary|truncatechars:50 }}</td>
+        <td>{{ log.task.cust_name|default:"—" }}</td>
+        <td>{{ log.category.name|default:"—" }}</td>
+        <td>{% if log.task %}#{{ log.task.id }}{% else %}—{% endif %}</td>
+        <td>{{ log.worker.name|default:"—" }}</td>
+        <td>
+          <span class="badge bg-info text-dark">
+            {{ log.action|title }}
+          </span>
+          <br>
+          <small class="text-muted">{{ log.status }}</small>
+        </td>
+
         <td>{{ log.created_at|date:"d M Y H:i" }}</td>
+
+        <td>
+          <button
+            class="btn btn-outline-primary btn-sm"
+            onclick="openLogDetail('{{ log.id }}')">
+            View
+          </button>
+        </td>
       </tr>
       {% empty %}
-      <tr><td colspan="6" class="text-center">No call logs found.</td></tr>
+      <tr>
+        <td colspan="7" class="text-center">No call logs found.</td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
 
+  <nav>
+  <ul class="pagination justify-content-center">
+      {% if calling_logs.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ calling_logs.previous_page_number }}">Previous</a>
+        </li>
+      {% endif %}
+
+      <li class="page-item disabled">
+        <span class="page-link">
+          Page {{ calling_logs.number }} of {{ calling_logs.paginator.num_pages }}
+        </span>
+      </li>
+
+      {% if calling_logs.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ calling_logs.next_page_number }}">Next</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <!-- Create Task Modal -->
+  <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Create New Task</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" action="{% url 'dashboard:task_add' %}">
+          {% csrf_token %}
+
+          <div class="modal-body" style="max-height:70vh; overflow-y:auto;">
+            <div class="row g-3">
+
+              <!-- CUSTOMER -->
+              <div class="col-md-6">
+                <label class="form-label">Customer Name</label>
+                <input type="text" name="cust_name" class="form-control" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Phone Number</label>
+                <input type="text" name="cust_phone" class="form-control" required pattern="\d{10}" maxlength="10">
+              </div>
+
+              <!-- WhatsApp Number + Same as Phone (Compact Row) -->
+              <div class="col-md-6">
+                  <label class="form-label">WhatsApp Number</label>
+                  <div class="input-group">
+                      <input type="text" name="cust_whatsapp" class="form-control"
+                              required pattern="\d{10}" maxlength="10">
+
+                      <div class="input-group-text">
+                          <input class="form-check-input mt-0" 
+                                  type="checkbox" 
+                                  id="sameWhatsappCheck" 
+                                  title="Same as Phone Number">
+                      </div>
+                  </div>
+                  <small class="text-muted">Check to copy phone number</small>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Pincode</label>
+                <input type="text" name="pincode" class="form-control" required
+                pattern="\d{6}" maxlength="6">
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Location</label>
+                <textarea name="cust_location" class="form-control" required></textarea>
+              </div>
+
+            <!-- CATEGORY -->
+            <div class="col-md-6">
+              <label class="form-label">Category</label>
+              <select name="category" id="categorySelect" class="form-select" required>
+                <option value="">Select Category</option>
+                {% for cat in categories %}
+                  {% if cat.category_type == "primary" %}
+                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+
+
+            <!-- Subcategories -->
+            <div class="col-md-6">
+              <label class="form-label">Subcategories</label>
+              <select name="subcategories" id="subcategorySelect" class="form-select" multiple>
+                <option value="">Select Category First</option>
+              </select>
+              <small class="text-muted">Ctrl+Click to select multiple</small>
+            </div>
+
+
+              <!-- DETAILS -->
+              <div class="col-12">
+                <label class="form-label">Additional Info</label>
+                <textarea name="additional_info" class="form-control"></textarea>
+              </div>
+
+              <!-- IMAGE -->
+              <div class="col-12">
+                <label class="form-label">Task Image</label>
+                <input type="file" name="task_image" class="form-control">
+              </div>
+
+              <!-- WORKER -->
+              <input type="hidden" name="worker">
+              <input type="hidden" name="requirement_id">
+
+              <div class="col-md-6">
+                <label class="form-label">Selected Worker</label>
+                <input type="text" name="worker_display" class="form-control" readonly>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Worker Phone</label>
+                <input type="text" name="worker_phone" class="form-control" readonly>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Worker Category</label>
+                <input type="text" name="worker_category" class="form-control" readonly>
+              </div>
+
+              <div class="col-md-4 mt-2">
+                <button type="button" class="btn btn-outline-primary w-100" onclick="openAssignWorkerModal()">
+                  Assign Worker
+                </button>
+              </div>
+
+              <!-- SCHEDULE -->
+              <div class="col-md-6">
+                <label class="form-label">Schedule Date</label>
+                <input type="datetime-local" name="schedule_date" class="form-control" required>
+              </div>
+
+              <!-- STATUS -->
+              <div class="col-md-6">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                  <option value="pending">Pending</option>
+                  <option value="scheduled">Scheduled</option>
+                  <option value="active">Active</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <!-- PAYMENT -->
+              <div class="col-md-6">
+                <label class="form-label">Payment Received</label>
+                <input type="number" step="0.01" name="payment_received_amt" class="form-control" value="0">
+              </div>
+
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button class="btn btn-primary">Save Task</button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Global assign worker modal (empty body - content loaded via AJAX) -->
+  <div class="modal fade" id="assignWorkerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Assign Worker</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="assignWorkerModalBody">
+          <div class="text-center py-4"><div class="spinner-border"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <h5 class="mb-3">🧾 Requirement Logs</h5>
   <table class="table table-striped align-middle">
     <thead class="table-dark">
-      <tr><th>#</th><th>Customer</th><th>Category</th><th>Status</th><th>Created</th></tr>
+      <tr><th>#</th><th>Customer</th><th>Category</th><th>Status</th><th>Created</th><th>Create Task</th></tr>
     </thead>
     <tbody>
       {% for req in requirements %}
       <tr>
         <td>{{ forloop.counter }}</td>
+
         <td>{{ req.name }}<br><small>{{ req.number }}</small></td>
+
         <td>{{ req.category.name }}</td>
-        <td><span class="badge {% if req.status == 'fulfilled' %}bg-success{% else %}bg-warning{% endif %}">{{ req.status|title }}</span></td>
+
+        <td>
+          <span class="badge 
+            {% if req.status == 'fulfilled' %}bg-success{% else %}bg-warning{% endif %}">
+            {{ req.status|title }}
+          </span>
+        </td>
+
         <td>{{ req.created_at|date:"d M Y H:i" }}</td>
+
+        <td>
+          {% if req.status != 'fulfilled' %}
+            <button 
+                class="btn btn-primary btn-sm create-task-btn"
+                data-name="{{ req.name }}"
+                data-phone="{{ req.number }}"
+                data-category="{{ req.category.id }}"
+                data-location="{{ req.location }}"
+                data-req="{{ req.id }}">
+              Create Task
+            </button>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+
       </tr>
-      {% empty %}
-      <tr><td colspan="5" class="text-center">No requirements found.</td></tr>
       {% endfor %}
     </tbody>
-  </table>
+</table>
+
+<div class="modal fade" id="logDetailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">📋 Log Details</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body" id="logDetailBody">
+        <div class="text-center py-5">
+          <div class="spinner-border"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
+
+</div>
+<script>
+function openAssignWorkerModal() {
+    fetch('/dashboard/tasks/assign-workers/')
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById("assignWorkerModalBody").innerHTML = html;
+        new bootstrap.Modal(document.getElementById("assignWorkerModal")).show();
+    });
+}
+
+document.addEventListener("click", function(e) {
+    if (!e.target.classList.contains("create-task-btn")) return;
+
+    const name = e.target.dataset.name;
+    const phone = e.target.dataset.phone;
+    const category = e.target.dataset.category;
+    const location = e.target.dataset.location;
+    const reqId = e.target.dataset.req;
+
+    const form = document.querySelector("#createTaskModal form");
+
+    // Fill fields
+    form.querySelector("input[name='cust_name']").value = name;
+    form.querySelector("input[name='cust_phone']").value = phone;
+    form.querySelector("textarea[name='cust_location']").value = location;
+
+    // 🔥 IMPORTANT — Reset dropdown before selecting category
+    const categorySelect = form.querySelector("select[name='category']");
+    categorySelect.selectedIndex = 0;
+    categorySelect.value = category;
+
+    // Set requirement id
+    form.querySelector("input[name='requirement_id']").value = reqId;
+
+    // Reset worker
+    form.querySelector("input[name='worker']").value = "";
+    form.querySelector("input[name='worker_display']").value = "";
+    form.querySelector("input[name='worker_phone']").value = "";
+    form.querySelector("input[name='worker_category']").value = "";
+
+    new bootstrap.Modal(document.getElementById("createTaskModal")).show();
+});
+
+
+document.addEventListener("click", function(e) {
+    if (!e.target.classList.contains("assign-worker")) return;
+
+    const wid = e.target.dataset.id;
+    const name = e.target.dataset.name;
+    const phone = e.target.dataset.phone;
+    const category = e.target.dataset.category;
+
+    const form = document.querySelector("#createTaskModal form");
+
+    form.querySelector("input[name='worker']").value = wid;
+    form.querySelector("input[name='worker_display']").value = name;
+    form.querySelector("input[name='worker_phone']").value = phone;
+    form.querySelector("input[name='worker_category']").value = category;
+
+    bootstrap.Modal.getInstance(document.getElementById("assignWorkerModal")).hide();
+});
+
+function initWhatsappSync(modalSelector) {
+    const modal = document.querySelector(modalSelector);
+    if (!modal) return;
+
+    const phone = modal.querySelector("input[name='cust_phone']");
+    const whatsapp = modal.querySelector("input[name='cust_whatsapp']");
+    const checkbox = modal.querySelector("#sameWhatsappCheck, #sameWhatsappCheckEdit");
+
+    if (!phone || !whatsapp || !checkbox) return;
+
+    // When checkbox toggled
+    checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+            whatsapp.value = phone.value;
+            whatsapp.readOnly = true;
+        } else {
+            whatsapp.readOnly = false;
+        }
+    });
+
+    // Auto-update whenever the phone changes
+    phone.addEventListener("input", () => {
+        if (checkbox.checked) {
+            whatsapp.value = phone.value;
+        }
+    });
+
+    // If checkbox was pre-checked (Edit case)
+    if (checkbox.checked) {
+        whatsapp.value = phone.value;
+        whatsapp.readOnly = true;
+    }
+}
+initWhatsappSync("#createTaskModal");
+
+function openLogDetail(logId) {
+  fetch(`/dashboard/logs/${logId}/`)
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById("logDetailBody").innerHTML = html;
+      new bootstrap.Modal(
+        document.getElementById("logDetailModal")
+      ).show();
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    initSubcategoryLoader("#createTaskModal");
+});
+
+function initSubcategoryLoader(modalSelector) {
+    const modal = document.querySelector(modalSelector);
+    if (!modal) return;
+
+    const categorySelect = modal.querySelector("#categorySelect");
+    const subSelect = modal.querySelector("#subcategorySelect");
+
+    if (!categorySelect || !subSelect) return;
+
+    categorySelect.addEventListener("change", function () {
+        loadSubcategories(this.value, subSelect);
+    });
+}
+
+function loadSubcategories(parentId, subSelect) {
+    subSelect.innerHTML = "<option>Loading...</option>";
+
+    if (!parentId) {
+        subSelect.innerHTML = "<option>Select Category First</option>";
+        return;
+    }
+
+    fetch(`/categories/get-subcategories/${parentId}/`)
+        .then(res => res.json())
+        .then(data => {
+            subSelect.innerHTML = "";
+
+            if (!data.subcategories.length) {
+                subSelect.innerHTML = "<option>No Subcategories Found</option>";
+                return;
+            }
+
+            data.subcategories.forEach(sub => {
+                const opt = document.createElement("option");
+                opt.value = sub.id;
+                opt.textContent = sub.name;
+                subSelect.appendChild(opt);
+            });
+        })
+        .catch(() => {
+            subSelect.innerHTML = "<option>Error loading subcategories</option>";
+        });
+}
+</script>
+
+
 {% endblock %}

@@ -29,11 +29,20 @@ urlpatterns = [
     path("tasks/assign-workers/", views.assign_worker_popup, name="assign_worker_popup"),
     
     path('tasks/<str:pk>/', views.task_detail, name='task_detail'),
+    # urls.py
+    path("tasks/<task_id>/", views.task_detail, name="task_detail"),
     path('tasks/<str:pk>/assign/', views.task_assign_worker, name='task_assign_worker'),
     path('tasks/<str:pk>/update-status/', views.task_update_status, name='task_update_status'),
     path('tasks/create-from-requirement/<str:requirement_id>/', views.task_create_from_requirement, name='task_create_from_requirement'),
-   
+    path('tasks/delete/<str:task_id>/', views.delete_task, name='task_delete'),
+
+    path("tasks/filter-workers/", views.filter_workers, name="filter_workers"),
+
     # Log & Requirement
     path('logs/', views.task_log_history, name='task_log_history'),
     path('requirements/<str:pk>/', views.requirement_detail, name='requirement_detail'),
+
+    # dashboard/urls.py
+    path("logs/<str:log_id>/", views.calling_log_detail, name="calling_log_detail"),
+
 ]

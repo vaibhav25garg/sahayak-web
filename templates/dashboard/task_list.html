@@ -59,14 +59,17 @@
         </td>
         <td>{{ t.schedule_date|date:"d M Y" }}</td>
         <td>
-          <a href="{% url 'dashboard:task_detail' t.id %}" class="btn btn-sm btn-info">View</a>
+        <a href="{% url 'dashboard:task_detail' t.id %}" class="btn btn-sm btn-info">View</a>
 
-          <button class="btn btn-sm btn-primary"
-                onclick="openEditTaskModal('{{ t.id }}')">
-            Edit
+        <button class="btn btn-sm btn-primary" onclick="openEditTaskModal('{{ t.id }}')">
+          Edit
         </button>
 
+        <button class="btn btn-sm btn-danger" onclick="confirmDelete('{{ t.id }}')">
+          Delete
+        </button>
       </td>
+
 
       </tr>
       {% empty %}
@@ -77,21 +80,21 @@
 </div>
 
 <!-- Create Task Modal -->
-<div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+<div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       
       <div class="modal-header">
-        <h5 class="modal-title" id="createTaskModalLabel">Create New Task</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title">Create New Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
       <form method="POST" enctype="multipart/form-data" action="{% url 'dashboard:task_add' %}">
         {% csrf_token %}
-
-        <div class="modal-body">
-
-          <div class="row g-3">
+        
+        <div class="modal-body" style="max-height:70vh; overflow-y:auto;">
+        
+        <div class="row g-3">
 
             <!-- Customer Fields -->
             <div class="col-md-6">
@@ -101,46 +104,62 @@
 
             <div class="col-md-6">
               <label class="form-label">Phone Number</label>
-              <input type="text" name="cust_phone" class="form-control" required>
+              <input type="text" name="cust_phone" class="form-control" required pattern="\d{10}" maxlength="10">
+            </div>
+            
+
+            
+            <!-- WhatsApp Number + Same as Phone (Compact Row) -->
+            <div class="col-md-6">
+                <label class="form-label">WhatsApp Number</label>
+                <div class="input-group">
+                    <input type="text" name="cust_whatsapp" class="form-control"
+                          required pattern="\d{10}" maxlength="10" placeholder="WhatsApp Number">
+
+                    <div class="input-group-text">
+                        <input class="form-check-input mt-0" 
+                              type="checkbox" 
+                              id="sameWhatsappCheck" 
+                              title="Same as Phone Number">
+                    </div>
+                </div>
+                <small class="text-muted">Check to copy phone number</small>
             </div>
 
-            <div class="col-md-6">
-              <label class="form-label">WhatsApp Number</label>
-              <input type="text" name="cust_whatsapp" class="form-control">
-            </div>
 
             <div class="col-md-6">
               <label class="form-label">Pincode</label>
-              <input type="text" name="pincode" class="form-control" required>
+              <input type="text" name="pincode" class="form-control" required pattern="\d{6}" maxlength="6">
             </div>
+            
 
             <div class="col-12">
               <label class="form-label">Location</label>
               <textarea name="cust_location" class="form-control" required></textarea>
             </div>
 
-            <!-- Category -->
-            <div class="col-md-6">
-              <label class="form-label">Category</label>
-              <select name="category" class="form-select" required>
-                <option value="">Select Category</option>
-                {% for cat in categories %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
-                {% endfor %}
-              </select>
-            </div>
+           <!-- Category -->
+            <select name="category" id="categorySelect" class="form-select" required>
+              <option value="">Select Category</option>
+              {% for cat in categories %}
+                {% if cat.category_type == "primary" %}
+                  <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+
 
             <!-- Subcategories -->
             <div class="col-md-6">
               <label class="form-label">Subcategories</label>
-              <select name="subcategories" class="form-select" multiple>
-                {% for cat in categories %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
-                {% endfor %}
+              <select name="subcategories" id="subcategorySelect" class="form-select" multiple>
+                  <option value="">Select Category First</option>
               </select>
+              <small class="text-muted">Ctrl+Click to select multiple</small>
             </div>
 
-            <!-- Additional Info -->
+
+              <!-- Additional Info -->
             <div class="col-12">
               <label class="form-label">Additional Info</label>
               <textarea name="additional_info" class="form-control"></textarea>
@@ -152,20 +171,29 @@
               <input type="file" name="task_image" class="form-control">
             </div>
 
-            <!-- Worker -->
+            <input type="hidden" name="worker">
+
+            <input type="hidden" name="requirement_id">
+
             <div class="col-md-6">
-              <label class="form-label">Assign Worker</label>
-              <select name="worker" class="form-select">
-                <option value="">Unassigned</option>
-                {% for worker in workers %}
-                <option value="{{ worker.id }}">{{ worker.name }}</option>
-                {% endfor %}
-              </select>
+              <label class="form-label">Selected Worker</label>
+              <input type="text" class="form-control" name="worker_display" readonly>
             </div>
-            
-            <button class="btn btn-sm btn-outline-primary"
-                    onclick="openAssignWorkerModal('{{ t.id }}')">
-              Assign Worker
+
+            <div class="col-md-6">
+              <label class="form-label">Worker Phone</label>
+              <input type="text" name="worker_phone" class="form-control" readonly>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Worker Category</label>
+              <input type="text" name="worker_category" class="form-control" readonly>
+            </div>
+
+            <button type="button" 
+              class="btn btn-outline-primary"
+              onclick="openAssignWorkerModal('{{ task.location_id }}')">
+                Assign Worker
             </button>
 
             <!-- Schedule Date -->
@@ -191,16 +219,13 @@
               <label class="form-label">Payment Received</label>
               <input type="number" step="0.01" name="payment_received_amt" class="form-control" value="0">
             </div>
-
           </div>
-
         </div>
-
-        <!-- Footer -->
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Save Task</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button class="btn btn-primary">Save Task</button>
         </div>
+
       </form>
     </div>
   </div>
@@ -266,6 +291,242 @@ function openAssignWorkerModal() {
             ).show();
         });
 }
+
+document.addEventListener('click', function (e) {
+    if (!e.target.classList.contains('assign-worker')) return;
+
+    const wid = e.target.dataset.id;
+    const name = e.target.dataset.name;
+    const phone = e.target.dataset.phone;
+    const category = e.target.dataset.category;
+
+    // 🔥 Detect if we are inside EDIT modal or CREATE modal
+    let modalForm;
+
+    if (document.querySelector('#editTaskModal.show')) {
+        // EDIT MODAL
+        modalForm = document.querySelector('#editTaskModal form');
+    } 
+    else {
+        // CREATE MODAL
+        modalForm = document.querySelector('#createTaskModal form');
+    }
+
+    // Update correct modal fields
+    modalForm.querySelector("input[name='worker']").value = wid;
+    modalForm.querySelector("input[name='worker_display']").value = name;
+    modalForm.querySelector("input[name='worker_phone']").value = phone;
+    modalForm.querySelector("input[name='worker_category']").value = category;
+
+    bootstrap.Modal.getInstance(
+        document.getElementById('assignWorkerModal')
+    ).hide();
+});
+
+function confirmDelete(taskId) {
+    if (!confirm("Are you sure you want to delete this task?")) return;
+
+    fetch(`/dashboard/tasks/delete/${taskId}/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": getCookie("csrftoken")
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert("Error deleting task.");
+        }
+    });
+}
+
+/* ---------------------------------------------
+   SUBCATEGORY LOADER (Works for Create + Edit)
+----------------------------------------------*/
+
+// Main loader function for any modal
+function initSubcategoryLoader(modalSelector) {
+    const modal = document.querySelector(modalSelector);
+    if (!modal) return;
+
+    const categorySelect = modal.querySelector("#categorySelect");
+    const subSelect = modal.querySelector("#subcategorySelect");
+
+    if (!categorySelect || !subSelect) return;
+
+    // When category changes, load new subcategories
+    categorySelect.addEventListener("change", function () {
+        const parentId = this.value;
+        loadSubcategories(parentId, subSelect, []);  // no preselected on manual change
+    });
+
+    // If EDIT modal already has category, auto-load with pre-selected subs
+    const preselected = subSelect.dataset.preselected
+        ? JSON.parse(subSelect.dataset.preselected)
+        : [];
+
+    if (categorySelect.value) {
+        loadSubcategories(categorySelect.value, subSelect, preselected);
+    }
+}
+
+
+/* ---------------------------------------------
+   AJAX FUNCTION TO LOAD SUBCATEGORIES
+----------------------------------------------*/
+function loadSubcategories(parentId, subSelect, preselected = []) {
+
+    // Clear previous options
+    subSelect.innerHTML = '<option>Loading...</option>';
+
+    if (!parentId) {
+        subSelect.innerHTML = '<option value="">Select Category First</option>';
+        return;
+    }
+
+    fetch(`/categories/get-subcategories/${parentId}/`)
+        .then(r => r.json())
+        .then(data => {
+            subSelect.innerHTML = "";
+
+            if (!data.subcategories.length) {
+                subSelect.innerHTML = '<option value="">No Subcategories Found</option>';
+                return;
+            }
+
+            data.subcategories.forEach(sub => {
+                const opt = document.createElement("option");
+                opt.value = sub.id;
+                opt.textContent = sub.name;
+
+                // Auto-select saved ones during EDIT
+                if (preselected.includes(sub.id)) {
+                    opt.selected = true;
+                }
+
+                subSelect.appendChild(opt);
+            });
+        })
+        .catch(() => {
+            subSelect.innerHTML = '<option value="">Error Loading Data</option>';
+        });
+}
+
+
+/* ---------------------------------------------
+   INITIALIZE FOR CREATE MODAL
+----------------------------------------------*/
+document.addEventListener("DOMContentLoaded", function () {
+    initSubcategoryLoader("#createTaskModal");
+});
+
+
+/* ---------------------------------------------
+   INITIALIZE FOR EDIT MODAL (after loading HTML)
+----------------------------------------------*/
+function openEditTaskModal(taskId) {
+    fetch(`/dashboard/tasks/edit/${taskId}/`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById("editTaskFormContainer").innerHTML = html;
+
+            // Wait for new HTML then initialize loader
+            setTimeout(() => {
+                initSubcategoryLoader("#editTaskModal");
+            }, 50);
+
+            new bootstrap.Modal(document.getElementById("editTaskModal")).show();
+        });
+}
+
+
+
+function initWhatsappSync(modalSelector) {
+    const modal = document.querySelector(modalSelector);
+    if (!modal) return;
+
+    const phone = modal.querySelector("input[name='cust_phone']");
+    const whatsapp = modal.querySelector("input[name='cust_whatsapp']");
+    const checkbox = modal.querySelector("#sameWhatsappCheck, #sameWhatsappCheckEdit");
+
+    if (!phone || !whatsapp || !checkbox) return;
+
+    // When checkbox toggled
+    checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+            whatsapp.value = phone.value;
+            whatsapp.readOnly = true;
+        } else {
+            whatsapp.readOnly = false;
+        }
+    });
+
+    // Auto-update whenever the phone changes
+    phone.addEventListener("input", () => {
+        if (checkbox.checked) {
+            whatsapp.value = phone.value;
+        }
+    });
+
+    // If checkbox was pre-checked (Edit case)
+    if (checkbox.checked) {
+        whatsapp.value = phone.value;
+        whatsapp.readOnly = true;
+    }
+}
+initWhatsappSync("#createTaskModal");
+
+function openEditTaskModal(taskId) {
+    fetch(`/dashboard/tasks/edit/${taskId}/`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById("editTaskFormContainer").innerHTML = html;
+
+            // INIT WHATSAPP SYNC FOR EDIT MODAL
+            setTimeout(() => initWhatsappSync("#editTaskModal"), 50);
+
+            new bootstrap.Modal(document.getElementById("editTaskModal")).show();
+        });
+}
+
+
+document.querySelector("input[name='pincode']").addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "").slice(0, 6);
+});
+
+document.querySelector("input[name='cust_phone']").addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "").slice(0, 10);
+});
+
+document.getElementById("filter-btn").addEventListener("click", function () {
+
+    let params = new URLSearchParams();
+
+    params.append("ajax", 1);
+    params.append("name", document.getElementById("filter-name").value);
+    params.append("age_min", document.getElementById("filter-age-min").value);
+    params.append("age_max", document.getElementById("filter-age-max").value);
+    params.append("category", document.getElementById("filter-category").value);
+
+    let subs = Array.from(document.getElementById("filter-subcategory").selectedOptions)
+                    .map(opt => opt.value);
+    subs.forEach(s => params.append("subcategories", s));
+
+    params.append("date", document.getElementById("filter-date").value);
+    params.append("same_location", document.getElementById("filter-location").checked ? "1" : "0");
+
+    // 🔥 Pass Task Location (Important!)
+    params.append("task_location", document.querySelector("input[name='pincode']").value);
+
+    fetch("/dashboard/tasks/assign-workers/?" + params.toString())
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById("worker-table-container").innerHTML = html;
+        });
+});
+
+
 
 </script>
 

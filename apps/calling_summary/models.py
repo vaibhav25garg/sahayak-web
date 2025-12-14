@@ -1,91 +1,74 @@
-# apps/calling_summary/models.py
 from django.db import models
 from apps.tasks.models import Task
 from apps.workers.models import Worker
 from apps.categories.models import Category
-import string
-import random
+import string, random
 
 
 def generate_random_id(length=None):
-    """Generate random alphanumeric ID (15–20 chars)."""
     if length is None:
         length = random.randint(15, 20)
-    letters = string.ascii_uppercase + string.digits
-    return ''.join(random.choice(letters) for _ in range(length))
+    return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
 
 class CallingSummary(models.Model):
 
-    # Primary Key: random string
-    id = models.CharField(
-        primary_key=True,
-        max_length=25,
-        editable=False,
-        unique=True
+    ACTION_CHOICES = (
+        ("created", "Created"),
+        ("updated", "Updated"),
+        ("status_changed", "Status Changed"),
+        ("worker_assigned", "Worker Assigned"),
     )
 
+    id = models.CharField(primary_key=True, max_length=25, editable=False)
+
     task = models.ForeignKey(
-        Task,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='call_logs'
+        Task, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="call_logs"
     )
-    
-    # Caller Details
+
+    # Customer
     caller_name = models.CharField(max_length=200)
     name = models.CharField(max_length=200)
     phone = models.CharField(max_length=15)
     location = models.TextField()
-    
-    # Service Details
+
+    # Service
     category = models.ForeignKey(
-        Category,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='call_categories'
+        Category, on_delete=models.SET_NULL,
+        null=True, related_name="call_categories"
     )
     subcategory = models.CharField(max_length=200, blank=True, null=True)
-    
-    # Worker Assignment
-    worker_assigned = models.CharField(max_length=200, blank=True, null=True)
+
+    # Worker
     worker = models.ForeignKey(
-        Worker,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='call_assignments'
+        Worker, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="call_assignments"
     )
-    
-    # Status and Payment
+    worker_assigned = models.CharField(max_length=200, blank=True, null=True)
+
+    # Action tracking
+    action = models.CharField(max_length=30, choices=ACTION_CHOICES)
     status = models.CharField(max_length=50)
+    changes = models.JSONField(blank=True, null=True)
+
+    # Payment
     payment_received = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    
-    # Feedback
-    feedback = models.TextField(blank=True, null=True)
-    rating = models.DecimalField(max_digits=3, decimal_places=2, blank=True, null=True)
-    
-    # Timestamps
+
+    # Time
     scheduled_at = models.DateTimeField()
     submit_time = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
-        db_table = 'calling_summary'
-        verbose_name_plural = 'Calling Summaries'
-        ordering = ['-created_at']
+        db_table = "calling_summary"
+        ordering = ["-created_at"]
 
     def save(self, *args, **kwargs):
-        """Generate unique random ID only on creation."""
         if not self.id:
-            new_id = generate_random_id()
-            while CallingSummary.objects.filter(id=new_id).exists():
-                new_id = generate_random_id()
-            self.id = new_id
-
+            self.id = generate_random_id()
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Call Log #{self.id} - {self.name}"
+        return f"Log {self.action} | Task {self.task_id}"

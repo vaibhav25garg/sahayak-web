@@ -1,0 +1,59 @@
+<div class="row mb-3">
+        <!-- Name Search -->
+    <div class="col-md-4">
+        <input class="form-control" id="filter-name" placeholder="Search name or phone...">
+    </div>
+
+    <!-- Age Range -->
+    <div class="col-md-2">
+        <input class="form-control" id="filter-age-min" placeholder="Min Age">
+    </div>
+
+    <div class="col-md-2">
+        <input class="form-control" id="filter-age-max" placeholder="Max Age">
+    </div>
+
+    <!-- Primary Category -->
+    <div class="col-md-4 mt-2">
+        <select class="form-control" id="filter-category">
+            <option value="">Primary Category</option>
+            {% for c in categories %}
+                {% if c.category_type == 'primary' %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Secondary Categories -->
+    <div class="col-md-6 mt-2">
+        <select class="form-control" id="filter-subcategory" multiple>
+            {% for c in categories %}
+                {% if c.category_type == 'subcategory' %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+        <small>Ctrl + Click to select multiples</small>
+    </div>
+
+    <!-- Availability (Schedule Date) -->
+    <div class="col-md-6 mt-2">
+        <input type="date" class="form-control" id="filter-date">
+        <small class="text-muted">Show only available workers</small>
+    </div>
+
+    <!-- Same Location -->
+    <div class="col-md-4 mt-2 d-flex align-items-center">
+        <input type="checkbox" id="filter-location" class="form-check-input me-2">
+        <label>Match Worker Location</label>
+    </div>
+
+    <div class="col-md-2 mt-2">
+        <button class="btn btn-primary w-100" id="filter-btn">Filter</button>
+    </div>
+</div>
+
+<div id="worker-table-container">
+    {% include 'dashboard/assign_worker_table.html' %}
+</div>

@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.db.models import Q, Count
 from django.utils import timezone
 from datetime import datetime, timedelta
+from apps import categories
 from apps.locations.utils import find_best_matching_location
 
 from apps.workers.models import Worker
@@ -27,7 +28,15 @@ from apps.categories.models import Category
 from apps.locations.models import Location
 from django.http import JsonResponse, HttpResponseBadRequest
 
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+from django.views.decorators.csrf import csrf_exempt
+import json
+from datetime import datetime
+
 from django.views.decorators.http import require_POST, require_GET
+from apps.dashboard.utils import log_task_change, make_aware_datetime
+
 # ============================================================
 # LOGIN/LOGOUT VIEWS
 # ============================================================
@@ -624,29 +633,65 @@ def task_add(request):
 
     if request.method == "POST":
         task = Task()
+
+        # ---------- CUSTOMER ----------
         task.cust_name = request.POST.get("cust_name")
         task.cust_phone = request.POST.get("cust_phone")
         task.cust_whatsapp = request.POST.get("cust_whatsapp")
         task.pincode = request.POST.get("pincode")
-        task.cust_location = request.POST.get("cust_location")
 
+        address_input = request.POST.get("cust_location")
+        matched_location = find_best_matching_location(address_input)
+
+        if not matched_location:
+            messages.error(request, "Service not available in this location.")
+            return redirect("dashboard:task_list")
+
+        task.location = matched_location
+        task.cust_location = address_input
+
+        # ---------- CATEGORY ----------
         category = request.POST.get("category")
         task.category_id = category if category else None
 
         task.additional_info = request.POST.get("additional_info")
         task.payment_received_amt = request.POST.get("payment_received_amt") or 0
 
-        worker = request.POST.get("worker")
-        task.worker_id = worker if worker else None
-        
-        schedule_date = request.POST.get("schedule_date")
-        task.schedule_date = schedule_date if schedule_date else None
-        task.status = request.POST.get("status")
+        # ---------- WORKER ----------
+        worker_id = request.POST.get("worker")
+        if worker_id:
+            task.worker_id = worker_id
+            task.worker_name = request.POST.get("worker_display")
+            task.worker_phone = request.POST.get("worker_phone")
+            task.worker_category = request.POST.get("worker_category")
 
+        # ---------- SCHEDULE ----------
+        schedule_date = request.POST.get("schedule_date")
+        task.schedule_date = make_aware_datetime(schedule_date)
+
+        # ---------- IMAGE ----------
         if request.FILES.get("task_image"):
             task.task_image = request.FILES["task_image"]
 
+        # 🔥 SAVE FIRST
         task.save()
+
+        # ---------- SUBCATEGORIES ----------
+        subcat_ids = [
+            s for s in request.POST.getlist("subcategories") if s.strip()
+        ]
+        task.subcategories.set(subcat_ids)
+
+        # ---------- REQUIREMENT ----------
+        req_id = request.POST.get("requirement_id")
+        if req_id:
+            task.requirement_id = req_id
+            Requirement.objects.filter(id=req_id).update(status="fulfilled")
+            task.save(update_fields=["requirement"])
+
+        # ---------- LOG ----------
+        task.save()
+        log_task_change(task, action="created")
 
         messages.success(request, "Task created successfully.")
         return redirect("dashboard:task_list")
@@ -656,6 +701,9 @@ def task_add(request):
         "workers": workers,
     })
 
+
+
+@login_required(login_url='dashboard:login')
 def edit_task(request, task_id):
     task = get_object_or_404(Task, id=task_id)
     categories = Category.objects.all()
@@ -666,34 +714,53 @@ def edit_task(request, task_id):
         task.cust_phone = request.POST.get("cust_phone")
         task.cust_whatsapp = request.POST.get("cust_whatsapp")
         task.pincode = request.POST.get("pincode")
-        task.cust_location = request.POST.get("cust_location")
+
+        address_input = request.POST.get("cust_location")
+        matched_location = find_best_matching_location(address_input)
+
+        if not matched_location:
+            messages.error(request, "Service not available in this location.")
+            return redirect("dashboard:task_list")
+
+        task.location = matched_location
+        task.cust_location = address_input
+
+        task.category_id = request.POST.get("category") or None
         task.additional_info = request.POST.get("additional_info")
         task.payment_received_amt = request.POST.get("payment_received_amt") or 0
-        
-        category = request.POST.get("category")
-        task.category_id = category if category else None
 
-        worker = request.POST.get("worker")
-        task.worker_id = worker if worker else None
+        wid = request.POST.get("worker")
+        if wid:
+            task.worker_id = wid
+            task.worker_name = request.POST.get("worker_name")
+            task.worker_phone = request.POST.get("worker_phone")
+            task.worker_category = request.POST.get("worker_category")
 
         schedule_date = request.POST.get("schedule_date")
-        task.schedule_date = schedule_date if schedule_date else None
+        task.schedule_date = make_aware_datetime(schedule_date)
 
+        task.day_service_done = request.POST.get("day_service_done") or None
         task.status = request.POST.get("status")
+
+        task.feedback = request.POST.get("feedback")
+        task.rating = request.POST.get("rating") or None
 
         if request.FILES.get("task_image"):
             task.task_image = request.FILES["task_image"]
 
         task.save()
 
-        # update M2M
-        subcat_ids = request.POST.getlist("subcategories")
-        task.subcategories.set(subcat_ids)
+        # SUBCATEGORIES
+        task.subcategories.set(request.POST.getlist("subcategories"))
 
-        # 🔥 show success message
-        messages.success(request, "Task updated successfully!")
+        # LOG
+        old_task = Task.objects.get(id=task.id)
 
-        # 🔥 redirect to task list page
+        task.save()
+        log_task_change(task, action="updated", old_task=old_task)
+
+
+        messages.success(request, "Task updated successfully.")
         return redirect("dashboard:task_list")
 
     return render(request, "dashboard/task_edit_form.html", {
@@ -702,18 +769,208 @@ def edit_task(request, task_id):
         "workers": workers,
     })
 
-def assign_worker_popup(request):
-    q = request.GET.get("q")
-    category = request.GET.get("category")
 
+from django.db.models import Q
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+@login_required(login_url='dashboard:login')
+def assign_worker_popup(request):
+
+    categories = Category.objects.all()
     workers = Worker.objects.all()
 
-    if category:
-        workers = workers.filter(category_id=category)
+    # ------------------------
+    # 🚀 APPLY FILTERS (AJAX)
+    # ------------------------
+    if request.GET.get("ajax") == "1":
 
-    if q:
-        workers = workers.filter(name__icontains=q)
+        name = request.GET.get("name", "")
+        age_min = request.GET.get("age_min")
+        age_max = request.GET.get("age_max")
+        category = request.GET.get("category")
+        subcategories = request.GET.getlist("subcategories")
+        date = request.GET.get("date")
+        same_location = request.GET.get("same_location")
+        task_location = request.GET.get("task_location")
 
-    return render(request, "dashboard/assign_worker_popup.html", {
+        # 1️⃣ Name / Phone
+        if name:
+            workers = workers.filter(
+                Q(name__icontains=name) |
+                Q(phone__icontains=name)
+            )
+
+        # 2️⃣ Age Range
+        if age_min:
+            workers = workers.filter(age__gte=age_min)
+        if age_max:
+            workers = workers.filter(age__lte=age_max)
+
+        # 3️⃣ Primary Category
+        if category:
+            workers = workers.filter(primary_category_id=category)
+
+        # 4️⃣ Secondary Categories
+        if subcategories:
+            workers = workers.filter(
+                secondary_categories__id__in=subcategories
+            ).distinct()
+
+        # 5️⃣ Worker Availability
+        if date:
+            workers = workers.exclude(busy_dates__icontains=date)
+
+        # 6️⃣ Same Location as Task
+        if same_location == "1" and task_location:
+            workers = workers.filter(location_id=task_location)
+
+        # Return only the table
+        return render(request, "dashboard/assign_worker_table.html", {
+            "workers": workers
+        })
+
+    # ------------------------
+    # FIRST MODAL LOAD
+    # ------------------------
+    return render(request, "dashboard/assign_worker_model.html", {
+        "categories": categories,
         "workers": workers,
     })
+
+@login_required
+def task_detail(request, pk):
+    task = get_object_or_404(Task, id=pk)
+
+    logs = task.call_logs.all().order_by("-created_at")
+
+    return render(request, "dashboard/task_detail.html", {
+        "task": task,
+        "logs": logs,
+    })
+
+
+
+@login_required(login_url='dashboard:login')
+def task_log_history(request):
+
+    calling_logs = CallingSummary.objects.select_related(
+        'task', 'worker', 'category'
+    ).order_by('-created_at')[:50]
+
+    requirements = Requirement.objects.order_by('-created_at')[:50]
+
+    return render(request, "dashboard/task_log_history.html", {
+        "calling_logs": calling_logs,
+        "requirements": requirements,
+    })
+
+
+@csrf_exempt
+def filter_workers(request):
+    data = json.loads(request.body)
+    workers = Worker.objects.all()
+
+    # Name or Phone filter
+    if data.get("name"):
+        workers = workers.filter(
+            Q(name__icontains=data["name"]) |
+            Q(phone__icontains=data["name"])
+        )
+
+    # Age range
+    if data.get("age_min"):
+        workers = workers.filter(age__gte=data["age_min"])
+    if data.get("age_max"):
+        workers = workers.filter(age__lte=data["age_max"])
+
+    # Primary Category
+    if data.get("category"):
+        workers = workers.filter(primary_category_id=data["category"])
+
+    # Secondary Categories
+    if data.get("subcategories"):
+        workers = workers.filter(secondary_categories__id__in=data["subcategories"]).distinct()
+
+    # Location match with task location
+    if data.get("match_location") and data.get("task_location"):
+        workers = workers.filter(location_id=data["task_location"])
+
+    # Date availability filter
+    if data.get("date"):
+        selected_date = data["date"]
+        workers = workers.exclude(busy_dates__icontains=selected_date)
+
+    html = render_to_string("dashboard/assign_worker_table.html", {"workers": workers})
+    return JsonResponse({"html": html})
+
+@require_POST
+@login_required(login_url='dashboard:login')
+def delete_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    task.delete()
+    return JsonResponse({"success": True})
+
+
+@login_required(login_url='dashboard:login')
+def calling_log_detail(request, log_id):
+    log = get_object_or_404(CallingSummary, id=log_id)
+
+    return render(request, "dashboard/calling_log_detail.html", {
+        "log": log
+    })
+
+from django.core.paginator import Paginator
+
+@login_required(login_url='dashboard:login')
+def task_log_history(request):
+    logs_qs = CallingSummary.objects.select_related(
+        "task", "worker", "category"
+    ).order_by("-created_at")
+    
+    categories = Category.objects.all()
+
+    paginator = Paginator(logs_qs, 10)  # 🔥 10 rows
+    page_number = request.GET.get("page")
+    calling_logs = paginator.get_page(page_number)
+
+    requirements = Requirement.objects.all().order_by('-created_at')[:10]
+
+    return render(request, "dashboard/task_log_history.html", {
+        "calling_logs": calling_logs,
+        "requirements": requirements,
+        "categories": categories,
+    })
+
+from django.shortcuts import render
+
+def home(request):
+    context = {
+        "cleaning_subcategories": [
+            "Full Home", "Kitchen", "Bathroom", "Sofa", "Mattress", "Office"
+        ],
+        "cleaning_services": [
+            {"name": "Home Cleaning", "desc": "Complete house cleaning"},
+            {"name": "Kitchen Deep Clean", "desc": "Oil & grease removal"},
+            {"name": "Bathroom Deep Clean", "desc": "Tiles & fittings"},
+            {"name": "Sofa Shampoo", "desc": "Fabric care"},
+        ],
+        "handyman_subcategories": [
+            "Electrician", "Plumber", "Carpenter", "Painter", "AC Service"
+        ],
+        "handyman_services": [
+            {"name": "Home Painting", "desc": "Interior & exterior"},
+            {"name": "Electrical Repair", "desc": "Switches & wiring"},
+            {"name": "Minor Plumbing", "desc": "Leak & tap repair"},
+        ],
+        "faqs": [
+            {"q": "What is SahayakCircle?", "a": "We connect customers with verified local workers."},
+            {"q": "Is it safe?", "a": "Workers go through basic verification."},
+            {"q": "How do I pay?", "a": "Pay directly after service confirmation."},
+        ],
+        "popular_tags": [
+            "Home Cleaning", "Electrician", "Plumber", "AC Service",
+            "Pest Control", "Carpenter", "Salon at Home"
+        ]
+    }
+    return render(request, "public/home.html", context)

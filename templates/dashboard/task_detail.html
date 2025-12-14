@@ -179,6 +179,41 @@
                     {% endif %}
                 </div>
             </div>
+
+            <div class="card mt-4">
+            <div class="card-header bg-dark text-white">
+                <h5>📜 Task Activity Timeline</h5>
+            </div>
+
+            <div class="card-body">
+                {% for log in logs %}
+                <div class="border rounded p-3 mb-3">
+                    <strong>{{ log.get_action_display }}</strong>
+                    <span class="text-muted float-end">
+                    {{ log.created_at|date:"d M Y, h:i A" }}
+                    </span>
+
+                    {% if log.changes %}
+                    <ul class="mt-2">
+                    {% for field, diff in log.changes.items %}
+                        <li>
+                        <strong>{{ field|title }}</strong> :
+                        <span class="text-danger">{{ diff.from }}</span>
+                        →
+                        <span class="text-success">{{ diff.to }}</span>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted mt-2">Initial task creation</p>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p class="text-muted">No activity yet.</p>
+                {% endfor %}
+            </div>
+            </div>
+
         </div>
     </div>
 </div>

@@ -7,9 +7,14 @@ from .serializers import CategorySerializer
 from django.http import JsonResponse
 from .models import Category
 
+# def get_subcategories(request, parent_id):
+#     subs = Category.objects.filter(parent_id=parent_id)
+#     data = [{"id": s.id, "name": s.name} for s in subs]
+#     return JsonResponse({"subcategories": data})
+
 def get_subcategories(request, parent_id):
-    subs = Category.objects.filter(parent_id=parent_id)
-    data = [{"id": s.id, "name": s.name} for s in subs]
+    subs = Category.objects.filter(parent_id=parent_id).values('id','name')
+    data = list(subs)  # [{'id':..., 'name':...}, ...]
     return JsonResponse({"subcategories": data})
 
 class CategoryViewSet(viewsets.ModelViewSet):

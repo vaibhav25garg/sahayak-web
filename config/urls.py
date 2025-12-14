@@ -43,6 +43,8 @@ urlpatterns = [
     
     # Public URLs (No authentication required)
     path('', include('apps.public.urls')),
+
+    path("categories/", include("apps.categories.urls")),
 ]
 
 # Serve media files in development
