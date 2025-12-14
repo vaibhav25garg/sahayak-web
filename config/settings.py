@@ -21,15 +21,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=57*=9*)+*0pu*haia^zy)3nqg^m=%3)+^krce10g$%3oq_@9p'
+# SECRET_KEY = 'django-insecure-=57*=9*)+*0pu*haia^zy)3nqg^m=%3)+^krce10g$%3oq_@9p'
 
+SECRET_KEY = config('SECRET_KEY')
 # SECRET_KEY = config('SECRET_KEY', default='your-secret-key-here')
 # DEBUG = config('DEBUG', default=True, cast=bool)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = False
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['*']
+
+# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    ".onrender.com",
+]
+
 
 # Session settings for 24-hour admin login
 SESSION_COOKIE_AGE = 86400  # 24 hours in seconds
@@ -72,7 +81,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'middleware.session_error_handler.SessionErrorMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -80,8 +88,10 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware'
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'middleware.session_error_handler.SessionErrorMiddleware',
 ]
+
 
 
 ROOT_URLCONF = 'config.urls'
@@ -165,7 +175,7 @@ USE_TZ = True
 
 # Static files
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = []  # or remove this line
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files
@@ -185,3 +195,20 @@ CORS_ALLOW_ALL_ORIGINS = True
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com",
+]
+
+import os
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Fix for admin static
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
