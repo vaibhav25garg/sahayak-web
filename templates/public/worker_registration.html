@@ -15,75 +15,110 @@
 
                 <!-- Left Column -->
                 <div class="form-group">
-                    <label>Full Name</label>
-                    <input type="text" name="name" placeholder="Enter full name" required>
+                    <label>Full Name <span class="required">*</span></label>
+                    <input type="text" name="name" placeholder="e.g., Rajesh Kumar" 
+                           pattern="[A-Za-z\s]{2,50}" title="Name should contain only letters and spaces (2-50 characters)" required>
+                    <small class="error-msg" id="name-error"></small>
                 </div>
 
                 <div class="form-group">
-                    <label>Phone Number</label>
-                    <input type="text" id="phoneInput" name="phone" placeholder="Enter phone number" required>
+                    <label>Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="phoneInput" name="phone" placeholder="e.g., 9876543210" 
+                           pattern="[6-9][0-9]{9}" title="Enter valid 10-digit mobile number" 
+                           maxlength="10" required>
+                    <small class="error-msg" id="phone-error"></small>
                 </div>
 
                 <div class="form-group">
                     <label>WhatsApp Number</label>
-                    <input type="text" id="whatsappInput" name="whatsapp_no" placeholder="Enter WhatsApp number">
+                    <input type="tel" id="whatsappInput" name="whatsapp_no" placeholder="e.g., 9876543210"
+                           pattern="[6-9][0-9]{9}" title="Enter valid 10-digit WhatsApp number" 
+                           maxlength="10">
 
                     <div class="checkbox-inline">
                         <input type="checkbox" id="sameAsPhone">
-                        <label for="sameAsPhone">Same as phone</label>
+                        <label for="sameAsPhone">Same as phone number</label>
                     </div>
+                    <small class="error-msg" id="whatsapp-error"></small>
                 </div>
 
                 <div class="form-group">
-                    <label>Age</label>
-                    <input type="number" name="age" placeholder="Enter age">
+                    <label>Age <span class="required">*</span></label>
+                    <input type="number" name="age" placeholder="e.g., 25" 
+                           min="18" max="65" title="Age must be between 18 and 65" required>
+                    <small class="error-msg" id="age-error"></small>
                 </div>
 
                 <div class="form-group">
-                    <label>Aadhar Number</label>
-                    <input type="text" name="aadhar_no" placeholder="Enter Aadhaar number">
+                    <label>Aadhar Number <span class="required">*</span></label>
+                    <input type="text" id="aadharInput" name="aadhar_no" placeholder="e.g., 1234 5678 9012"
+                           pattern="[0-9]{12}" title="Enter valid 12-digit Aadhar number" 
+                           maxlength="14" required>
+                    <small class="error-msg" id="aadhar-error"></small>
                 </div>
 
                 <div class="form-group">
-                    <label>Pincode</label>
-                    <input type="text" id="pincodeInput" name="pincode" placeholder="Enter pincode" required>
+                    <label>Pincode <span class="required">*</span></label>
+                    <input type="text" id="pincodeInput" name="pincode" placeholder="e.g., 411001"
+                           pattern="[1-9][0-9]{5}" title="Enter valid 6-digit pincode" 
+                           maxlength="6" required>
+                    <small class="error-msg" id="pincode-error"></small>
                 </div>
 
                 <!-- Full width fields -->
                 <div class="form-group full">
-                    <label>Full Address</label>
-                    <input type="text" name="address" placeholder="House No, Street, Area">
+                    <label>Full Address <span class="required">*</span></label>
+                    <input type="text" name="address" placeholder="e.g., House No. 123, MG Road, Koramangala"
+                           minlength="10" maxlength="200" title="Enter complete address" required>
+                    <small class="error-msg" id="address-error"></small>
                 </div>
 
                 <div class="form-group">
-                    <label>Primary Category</label>
+                    <label>Primary Category <span class="required">*</span></label>
                     <select name="category" id="primaryCategorySelect" required>
-                        <option value="">Select Category</option>
+                        <option value="">Select Your Primary Category</option>
                         {% for cat in categories %}
                         <option value="{{ cat.id }}">{{ cat.name }}</option>
                         {% endfor %}
                     </select>
+                    <small class="error-msg" id="category-error"></small>
                 </div>
 
                 <div class="form-group full">
-                    <label>Sub Categories (optional)</label>
-                    <select name="secondary_categories[]" id="subcategory-select" multiple></select>
-                    <small class="note">You can select multiple subcategories</small>
+                    <label>Sub Categories (Optional)</label>
+                    <div id="subcategory-container" class="subcategory-container">
+                        <div class="subcategory-placeholder">
+                            <svg class="icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <p>Select a primary category first to see available subcategories</p>
+                        </div>
+                    </div>
+                    <small class="note">You can select multiple subcategories that match your skills</small>
                 </div>
 
                 <div class="form-group">
-                    <label>Aadhar Front</label>
-                    <input type="file" name="aadhar_img_front">
+                    <label>Aadhar Card - Front Side <span class="required">*</span></label>
+                    <input type="file" name="aadhar_img_front" id="aadharFront" 
+                           accept="image/jpeg,image/jpg,image/png" required>
+                    <small class="note">Upload clear photo (JPG, PNG, max 5MB)</small>
+                    <small class="error-msg" id="aadhar-front-error"></small>
                 </div>
 
                 <div class="form-group">
-                    <label>Aadhar Back</label>
-                    <input type="file" name="aadhar_img_back">
+                    <label>Aadhar Card - Back Side <span class="required">*</span></label>
+                    <input type="file" name="aadhar_img_back" id="aadharBack" 
+                           accept="image/jpeg,image/jpg,image/png" required>
+                    <small class="note">Upload clear photo (JPG, PNG, max 5MB)</small>
+                    <small class="error-msg" id="aadhar-back-error"></small>
                 </div>
 
                 <div class="form-group full">
-                    <label>Selfie</label>
-                    <input type="file" name="selfie_img">
+                    <label>Your Selfie Photo <span class="required">*</span></label>
+                    <input type="file" name="selfie_img" id="selfieImg" 
+                           accept="image/jpeg,image/jpg,image/png" required>
+                    <small class="note">Upload a clear selfie photo (JPG, PNG, max 5MB)</small>
+                    <small class="error-msg" id="selfie-error"></small>
                 </div>
 
             </div>
@@ -134,8 +169,24 @@
     gap: 22px 25px;
 }
 
+.form-group {
+    position: relative;
+}
+
 .form-group.full {
     grid-column: span 2;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #333;
+}
+
+.required {
+    color: #dc3545;
+    font-weight: bold;
 }
 
 input, select {
@@ -144,15 +195,206 @@ input, select {
     border: 1px solid #d4d4d4;
     border-radius: 8px;
     font-size: 15px;
+    transition: all 0.3s ease;
 }
 
-/* MULTI SELECT FIX */
-#subcategory-select {
-    height: 140px !important;
-    padding: 10px;
+input:focus, select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+input.error, select.error {
+    border-color: #dc3545;
+}
+
+input.success, select.success {
+    border-color: #28a745;
+}
+
+/* ============================================ */
+/* SUBCATEGORY CONTAINER - MODERN CHECKBOX UI */
+/* ============================================ */
+
+.subcategory-container {
+    min-height: 120px;
+    max-height: 280px;
+    padding: 15px;
+    border: 1px solid #d4d4d4;
     border-radius: 8px;
-    resize: vertical;
+    background: #f8f9fa;
     overflow-y: auto;
+    transition: all 0.3s ease;
+}
+
+.subcategory-container:hover {
+    border-color: #007bff;
+}
+
+/* Placeholder state */
+.subcategory-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    color: #6c757d;
+    text-align: center;
+}
+
+.subcategory-placeholder .icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    color: #adb5bd;
+    opacity: 0.8;
+}
+
+.subcategory-placeholder p {
+    margin: 0;
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* Loading state */
+.subcategory-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    color: #007bff;
+    font-size: 14px;
+    gap: 10px;
+}
+
+.subcategory-loading .spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #e9ecef;
+    border-top-color: #007bff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Checkbox items */
+.subcategory-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.subcategory-item:hover {
+    background: #f0f7ff;
+    border-color: #007bff;
+    transform: translateX(4px);
+}
+
+.subcategory-item:last-child {
+    margin-bottom: 0;
+}
+
+.subcategory-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: #007bff;
+}
+
+.subcategory-item label {
+    margin: 0;
+    font-size: 15px;
+    color: #333;
+    cursor: pointer;
+    flex: 1;
+    user-select: none;
+}
+
+.subcategory-item.checked {
+    background: #e7f3ff;
+    border-color: #007bff;
+}
+
+.subcategory-item.checked label {
+    color: #007bff;
+    font-weight: 500;
+}
+
+/* Empty state */
+.subcategory-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    color: #6c757d;
+    text-align: center;
+}
+
+.subcategory-empty .icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 10px;
+    color: #adb5bd;
+    opacity: 0.7;
+}
+
+.subcategory-empty p {
+    margin: 0;
+    font-size: 13px;
+}
+
+/* Error state */
+.subcategory-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    color: #dc3545;
+    text-align: center;
+}
+
+.subcategory-error .icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 10px;
+    color: #dc3545;
+}
+
+.subcategory-error p {
+    margin: 0;
+    font-size: 13px;
+}
+
+/* Scrollbar styling */
+.subcategory-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.subcategory-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.subcategory-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.subcategory-container::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0;
 }
 
 /* Checkbox inline */
@@ -161,6 +403,33 @@ input, select {
     display: flex;
     align-items: center;
     gap: 5px;
+}
+
+.checkbox-inline input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.checkbox-inline label {
+    margin: 0;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+/* Helper text */
+.note {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.error-msg {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #dc3545;
+    font-weight: 500;
 }
 
 /* Button */
@@ -175,10 +444,22 @@ input, select {
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
+    transition: background 0.3s ease;
 }
 
 .submit-btn:hover {
     background: #0056b3;
+}
+
+.submit-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+/* File input styling */
+input[type="file"] {
+    padding: 10px;
+    font-size: 14px;
 }
 
 /* MOBILE FIX */
@@ -189,15 +470,23 @@ input, select {
     .form-group.full {
         grid-column: span 1;
     }
+    .register-card {
+        padding: 25px 20px;
+    }
 }
 </style>
 
 <script>
+// ============================================================
+// FORM VALIDATION & AUTO-FILL FUNCTIONALITY
+// ============================================================
+
 // WhatsApp auto-fill
 document.getElementById("sameAsPhone").addEventListener("change", function () {
     if (this.checked) {
-        document.getElementById("whatsappInput").value =
-            document.getElementById("phoneInput").value;
+        const phoneValue = document.getElementById("phoneInput").value;
+        document.getElementById("whatsappInput").value = phoneValue;
+        validateField(document.getElementById("whatsappInput"));
     }
 });
 
@@ -208,35 +497,377 @@ document.getElementById("phoneInput").addEventListener("input", function () {
     }
 });
 
-// Load subcategories
-function loadSubcategories(categoryId) {
-    fetch(`/categories/get-subcategories/${categoryId}/`)
-        .then(res => res.json())
-        .then(data => {
-            let select = document.getElementById("subcategory-select");
-            select.innerHTML = "";
+// Format Aadhar number with spaces (1234 5678 9012)
+document.getElementById("aadharInput").addEventListener("input", function (e) {
+    let value = e.target.value.replace(/\s/g, ''); // Remove spaces
+    if (value.length > 12) {
+        value = value.slice(0, 12);
+    }
+    
+    // Add spaces after every 4 digits
+    let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+    e.target.value = formatted;
+});
 
-            if (data.subcategories.length === 0) {
-                let option = document.createElement("option");
-                option.textContent = "No subcategories available";
-                option.disabled = true;
-                select.appendChild(option);
+// Validate phone numbers (only digits)
+document.getElementById("phoneInput").addEventListener("input", function (e) {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+    validateField(e.target);
+});
+
+document.getElementById("whatsappInput").addEventListener("input", function (e) {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+    validateField(e.target);
+});
+
+// Validate pincode (only digits)
+document.getElementById("pincodeInput").addEventListener("input", function (e) {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    validateField(e.target);
+});
+
+// ============================================================
+// FIELD VALIDATION FUNCTIONS
+// ============================================================
+
+function validateField(input) {
+    const value = input.value.trim();
+    const name = input.name;
+    let errorMsg = '';
+    let isValid = true;
+
+    // Clear previous error
+    const errorElement = document.getElementById(`${name}-error`);
+    if (errorElement) {
+        errorElement.textContent = '';
+    }
+
+    // Validation rules
+    switch (name) {
+        case 'phone':
+        case 'whatsapp_no':
+            if (value && !/^[6-9][0-9]{9}$/.test(value)) {
+                errorMsg = 'Enter a valid 10-digit mobile number starting with 6-9';
+                isValid = false;
+            }
+            break;
+
+        case 'aadhar_no':
+            const aadharDigits = value.replace(/\s/g, '');
+            if (value && !/^[0-9]{12}$/.test(aadharDigits)) {
+                errorMsg = 'Aadhar number must be exactly 12 digits';
+                isValid = false;
+            }
+            break;
+
+        case 'pincode':
+            if (value && !/^[1-9][0-9]{5}$/.test(value)) {
+                errorMsg = 'Enter a valid 6-digit pincode';
+                isValid = false;
+            }
+            break;
+
+        case 'age':
+            const age = parseInt(value);
+            if (value && (age < 18 || age > 65)) {
+                errorMsg = 'Age must be between 18 and 65 years';
+                isValid = false;
+            }
+            break;
+
+        case 'name':
+            if (value && (value.length < 2 || value.length > 50)) {
+                errorMsg = 'Name must be between 2 and 50 characters';
+                isValid = false;
+            }
+            if (value && !/^[A-Za-z\s]+$/.test(value)) {
+                errorMsg = 'Name should contain only letters and spaces';
+                isValid = false;
+            }
+            break;
+
+        case 'address':
+            if (value && value.length < 10) {
+                errorMsg = 'Please enter complete address (minimum 10 characters)';
+                isValid = false;
+            }
+            break;
+    }
+
+    // Display error message
+    if (errorElement && errorMsg) {
+        errorElement.textContent = errorMsg;
+    }
+
+    // Add visual feedback
+    if (value) {
+        if (isValid) {
+            input.classList.remove('error');
+            input.classList.add('success');
+        } else {
+            input.classList.remove('success');
+            input.classList.add('error');
+        }
+    } else {
+        input.classList.remove('error', 'success');
+    }
+
+    return isValid;
+}
+
+// Attach validation to all inputs
+document.querySelectorAll('input[type="text"], input[type="tel"], input[type="number"]').forEach(input => {
+    input.addEventListener('blur', function() {
+        validateField(this);
+    });
+});
+
+// ============================================================
+// FILE VALIDATION
+// ============================================================
+
+function validateFile(input) {
+    const file = input.files[0];
+    const errorElement = document.getElementById(`${input.id.replace(/([A-Z])/g, '-$1').toLowerCase()}-error`);
+    
+    if (!file) return true;
+
+    // Check file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+        if (errorElement) {
+            errorElement.textContent = 'Only JPG, JPEG, and PNG files are allowed';
+        }
+        input.value = '';
+        return false;
+    }
+
+    // Check file size (5MB max)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+        if (errorElement) {
+            errorElement.textContent = 'File size must be less than 5MB';
+        }
+        input.value = '';
+        return false;
+    }
+
+    // Clear error if valid
+    if (errorElement) {
+        errorElement.textContent = '';
+    }
+
+    return true;
+}
+
+// Attach file validation
+['aadharFront', 'aadharBack', 'selfieImg'].forEach(id => {
+    const input = document.getElementById(id);
+    if (input) {
+        input.addEventListener('change', function() {
+            validateFile(this);
+        });
+    }
+});
+
+// ============================================================
+// FORM SUBMIT VALIDATION
+// ============================================================
+
+document.querySelector('.form').addEventListener('submit', function(e) {
+    let isValid = true;
+    const submitBtn = document.querySelector('.submit-btn');
+
+    // Validate all required text inputs
+    document.querySelectorAll('input[required], select[required]').forEach(input => {
+        if (input.type !== 'file' && !input.value.trim()) {
+            isValid = false;
+            input.classList.add('error');
+            
+            const errorElement = document.getElementById(`${input.name}-error`);
+            if (errorElement) {
+                errorElement.textContent = 'This field is required';
+            }
+        } else if (input.type !== 'file') {
+            if (!validateField(input)) {
+                isValid = false;
+            }
+        }
+    });
+
+    // Validate file uploads
+    const requiredFiles = ['aadharFront', 'aadharBack', 'selfieImg'];
+    requiredFiles.forEach(id => {
+        const input = document.getElementById(id);
+        if (input && !input.files.length) {
+            isValid = false;
+            const errorElement = document.getElementById(`${id.replace(/([A-Z])/g, '-$1').toLowerCase()}-error`);
+            if (errorElement) {
+                errorElement.textContent = 'This file is required';
+            }
+        }
+    });
+
+    if (!isValid) {
+        e.preventDefault();
+        
+        // Scroll to first error
+        const firstError = document.querySelector('.error');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+
+        // Show alert
+        alert('Please fix all errors before submitting the form.');
+        return false;
+    }
+
+    // Disable submit button to prevent double submission
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+});
+
+// ============================================================
+// LOAD SUBCATEGORIES - MODERN CHECKBOX UI
+// ============================================================
+
+function loadSubcategories(categoryId) {
+    const container = document.getElementById("subcategory-container");
+    
+    if (!categoryId) {
+        container.innerHTML = `
+            <div class="subcategory-placeholder">
+                <i class="icon">📋</i>
+                <p>Select a primary category first to see available subcategories</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Show loading state
+    container.innerHTML = `
+        <div class="subcategory-loading">
+            <div class="spinner"></div>
+            <span>Loading subcategories...</span>
+        </div>
+    `;
+
+    // Fetch subcategories for the selected parent category
+    fetch(`/categories/get-subcategories/${categoryId}/`)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Failed to load subcategories');
+            }
+            return res.json();
+        })
+        .then(data => {
+            const subcategories = data.subcategories || [];
+
+            if (subcategories.length === 0) {
+                container.innerHTML = `
+                    <div class="subcategory-empty">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <p>No subcategories available for this category</p>
+                    </div>
+                `;
+                console.log(`ℹ️ No subcategories found for category: ${categoryId}`);
                 return;
             }
 
-            data.subcategories.forEach(sub => {
-                let option = document.createElement("option");
-                option.value = sub.id;
-                option.textContent = sub.name;
-                select.appendChild(option);
+            // Build checkbox list
+            let html = '';
+            subcategories.forEach((sub, index) => {
+                html += `
+                    <div class="subcategory-item" data-checkbox-id="subcat-${index}">
+                        <input type="checkbox" 
+                               name="secondary_categories" 
+                               value="${sub.id}" 
+                               id="subcat-${index}">
+                        <label for="subcat-${index}">${sub.name}</label>
+                    </div>
+                `;
             });
+
+            container.innerHTML = html;
+            
+            // Add click event listeners to each item
+            container.querySelectorAll('.subcategory-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Only toggle if not clicking directly on checkbox or label
+                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
+                        const checkboxId = this.getAttribute('data-checkbox-id');
+                        const checkbox = document.getElementById(checkboxId);
+                        checkbox.checked = !checkbox.checked;
+                        updateCheckboxUI(this, checkbox.checked);
+                    } else if (e.target.tagName === 'INPUT') {
+                        // If clicking directly on checkbox, just update UI
+                        updateCheckboxUI(this, e.target.checked);
+                    } else if (e.target.tagName === 'LABEL') {
+                        // If clicking on label, it will toggle checkbox automatically
+                        // We just need to update UI after a tiny delay
+                        setTimeout(() => {
+                            const checkboxId = this.getAttribute('data-checkbox-id');
+                            const checkbox = document.getElementById(checkboxId);
+                            updateCheckboxUI(this, checkbox.checked);
+                        }, 10);
+                    }
+                });
+            });
+
+            console.log(`✅ Loaded ${subcategories.length} subcategories for category: ${categoryId}`);
+        })
+        .catch(err => {
+            console.error('❌ Error loading subcategories:', err);
+            container.innerHTML = `
+                <div class="subcategory-error">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <p>Error loading subcategories. Please try again.</p>
+                </div>
+            `;
         });
 }
 
-// Listen category change
+// Update checkbox UI state
+function updateCheckboxUI(item, isChecked) {
+    if (isChecked) {
+        item.classList.add('checked');
+    } else {
+        item.classList.remove('checked');
+    }
+}
+
+// Listen to category change
 document.getElementById("primaryCategorySelect").addEventListener("change", function () {
-    loadSubcategories(this.value);
+    const categoryId = this.value;
+    console.log(`📂 Category selected: ${categoryId}`);
+    loadSubcategories(categoryId);
+    validateField(this);
 });
+
+// ============================================================
+// REAL-TIME INPUT FEEDBACK
+// ============================================================
+
+// Add character counter for address
+const addressInput = document.querySelector('input[name="address"]');
+if (addressInput) {
+    addressInput.addEventListener('input', function() {
+        const length = this.value.length;
+        const errorElement = document.getElementById('address-error');
+        if (errorElement && length > 0 && length < 10) {
+            errorElement.textContent = `Enter at least ${10 - length} more characters`;
+        }
+    });
+}
+
+console.log('✅ Form validation initialized');
 </script>
 
 {% endblock %}
