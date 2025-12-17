@@ -46,53 +46,85 @@ def worker_registration(request):
     if request.method == 'POST':
         try:
             worker = Worker()
-            worker.name = request.POST.get('name')
-            worker.phone = request.POST.get('phone')
 
-            # Auto-fill WhatsApp if checkbox selected
+            # ---------------- BASIC INFO ----------------
+            worker.name = request.POST.get('name', '').strip()
+            worker.phone = request.POST.get('phone', '').strip()
+
+            if not worker.phone.isdigit() or len(worker.phone) != 10:
+                messages.error(request, "Enter a valid 10-digit phone number.")
+                return redirect('public:worker_registration')
+
+            # WhatsApp
             whatsapp_same = request.POST.get('same_as_phone')
-            worker.whatsapp_no = worker.phone if whatsapp_same else request.POST.get('whatsapp_no')
+            worker.whatsapp_no = worker.phone if whatsapp_same else request.POST.get('whatsapp_no', '').strip()
 
-            worker.age = request.POST.get('age')
-            worker.aadhar_no = request.POST.get('aadhar_no')
+            # Age (optional but numeric)
+            age = request.POST.get('age')
+            if age:
+                if not age.isdigit():
+                    messages.error(request, "Age must be a number.")
+                    return redirect('public:worker_registration')
+                worker.age = int(age)
 
-            # Primary category
-            worker.primary_category_id = request.POST.get('category')
+            # ---------------- AADHAR ----------------
+            raw_aadhar = request.POST.get('aadhar_no', '')
+            aadhar = raw_aadhar.replace(" ", "")  # 🔥 REMOVE SPACES
 
-            # Address typed by user
-            address_input = request.POST.get('address')
+            if not aadhar.isdigit() or len(aadhar) != 12:
+                messages.error(request, "Enter a valid 12-digit Aadhar number.")
+                return redirect('public:worker_registration')
 
-            # Apply fuzzy logic
+            worker.aadhar_no = aadhar
+
+            # ---------------- CATEGORY ----------------
+            category_id = request.POST.get('category')
+            if not category_id:
+                messages.error(request, "Please select a category.")
+                return redirect('public:worker_registration')
+
+            worker.primary_category_id = category_id
+
+            # ---------------- LOCATION ----------------
+            address_input = request.POST.get('address', '').strip()
             matched_location = find_best_matching_location(address_input)
 
-            if matched_location:
-                worker.location = matched_location
-            else:
-                messages.error(request, "Service not available for this location. Please enter a correct address.")
+            if not matched_location:
+                messages.error(
+                    request,
+                    "Service not available for this location. Please enter a correct address."
+                )
                 return redirect('public:worker_registration')
-        
-            # Images
+
+            worker.location = matched_location
+
+            # ---------------- FILES ----------------
             worker.aadhar_img_front = request.FILES.get('aadhar_img_front')
             worker.aadhar_img_back = request.FILES.get('aadhar_img_back')
             worker.selfie_img = request.FILES.get('selfie_img')
 
+            # ---------------- SAVE ----------------
             worker.save()
 
-            # Add subcategories
-            worker.secondary_categories.set(request.POST.getlist('secondary_categories'))
+            # Secondary categories (M2M)
+            secondary_cats = request.POST.getlist('secondary_categories')
+            if secondary_cats:
+                worker.secondary_categories.set(secondary_cats)
 
-            messages.success(request, "Registration Successful!")
+            messages.success(request, "Registration Successful! Our team will verify your details.")
             return redirect('public:home')
 
         except Exception as e:
-            messages.error(request, f"Registration error: {e}")
-            print(e)
+            messages.error(request, "Something went wrong. Please try again.")
+            print("Worker Registration Error:", e)
 
+    # GET REQUEST
     categories = Category.objects.filter(category_type='primary')
 
     return render(request, 'public/worker_registration.html', {
         'categories': categories
     })
+
 
 @require_http_methods(["GET", "POST"])
 def requirement_form(request):
