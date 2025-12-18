@@ -1,294 +1,249 @@
 {% extends 'base.html' %}
 {% block title %}Join as Worker | SahayakCircle{% endblock %}
+
 {% block content %}
 
 <div class="page-wrapper">
-    <div class="register-card">
+  <div class="register-card">
+    <h2 class="title">Join as a Worker</h2>
+    <p class="subtitle">Provide your details to start working with SahayakCircle.</p>
 
-        <h2 class="title">Join as a Worker</h2>
-        <p class="subtitle">Provide your details to start working with SahayakCircle.</p>
+    <form method="POST" enctype="multipart/form-data" class="form">
+      {% csrf_token %}
 
-        <form method="POST" enctype="multipart/form-data" class="form">
-            {% csrf_token %}
+      <div class="grid">
+        <!-- Left Column Fields -->
+        <div class="form-group">
+          <label>Full Name <span class="required">*</span></label>
+          <input type="text" name="name" placeholder="e.g., Rajesh Kumar" 
+                 pattern="[A-Za-z\s]{2,50}" title="Name should contain only letters and spaces (2-50 characters)" required>
+          <small class="error-msg" id="name-error"></small>
+        </div>
 
-            <div class="grid">
+        <div class="form-group">
+          <label>Phone Number <span class="required">*</span></label>
+          <input type="tel" id="phoneInput" name="phone" placeholder="e.g., 9876543210" 
+                 pattern="[6-9][0-9]{9}" title="Enter valid 10-digit mobile number" 
+                 maxlength="10" required>
+          <small class="error-msg" id="phone-error"></small>
+        </div>
 
-                <!-- Left Column -->
-                <div class="form-group">
-                    <label>Full Name <span class="required">*</span></label>
-                    <input type="text" name="name" placeholder="e.g., Rajesh Kumar" 
-                           pattern="[A-Za-z\s]{2,50}" title="Name should contain only letters and spaces (2-50 characters)" required>
-                    <small class="error-msg" id="name-error"></small>
-                </div>
+        <div class="form-group">
+          <label>WhatsApp Number</label>
+          <input type="tel" id="whatsappInput" name="whatsapp_no" placeholder="e.g., 9876543210"
+                 pattern="[6-9][0-9]{9}" title="Enter valid 10-digit WhatsApp number" 
+                 maxlength="10">
+          <div class="checkbox-inline">
+            <input type="checkbox" id="sameAsPhone">
+            <label for="sameAsPhone">Same as phone number</label>
+          </div>
+          <small class="error-msg" id="whatsapp_no-error"></small>
+        </div>
 
-                <div class="form-group">
-                    <label>Phone Number <span class="required">*</span></label>
-                    <input type="tel" id="phoneInput" name="phone" placeholder="e.g., 9876543210" 
-                           pattern="[6-9][0-9]{9}" title="Enter valid 10-digit mobile number" 
-                           maxlength="10" required>
-                    <small class="error-msg" id="phone-error"></small>
-                </div>
+        <div class="form-group">
+          <label>Age <span class="required">*</span></label>
+          <input type="number" name="age" placeholder="e.g., 25" 
+                 min="18" max="65" title="Age must be between 18 and 65" required>
+          <small class="error-msg" id="age-error"></small>
+        </div>
 
-                <div class="form-group">
-                    <label>WhatsApp Number</label>
-                    <input type="tel" id="whatsappInput" name="whatsapp_no" placeholder="e.g., 9876543210"
-                           pattern="[6-9][0-9]{9}" title="Enter valid 10-digit WhatsApp number" 
-                           maxlength="10">
+        <div class="form-group">
+          <label>Aadhar Number <span class="required">*</span></label>
+          <input type="text" id="aadharInput" name="aadhar_no" placeholder="XXXX XXXX XXXX"
+                 inputmode="numeric" autocomplete="off" required>
+          <small class="error-msg" id="aadhar_no-error"></small>
+        </div>
 
-                    <div class="checkbox-inline">
-                        <input type="checkbox" id="sameAsPhone">
-                        <label for="sameAsPhone">Same as phone number</label>
-                    </div>
-                    <small class="error-msg" id="whatsapp-error"></small>
-                </div>
+        <div class="form-group">
+          <label>Pincode <span class="required">*</span></label>
+          <input type="text" id="pincodeInput" name="pincode" placeholder="e.g., 411001"
+                 pattern="[1-9][0-9]{5}" title="Enter valid 6-digit pincode" 
+                 maxlength="6" required>
+          <small class="error-msg" id="pincode-error"></small>
+        </div>
 
-                <div class="form-group">
-                    <label>Age <span class="required">*</span></label>
-                    <input type="number" name="age" placeholder="e.g., 25" 
-                           min="18" max="65" title="Age must be between 18 and 65" required>
-                    <small class="error-msg" id="age-error"></small>
-                </div>
+        <!-- Full Width Fields -->
+        <div class="form-group full-width">
+          <label>Full Address <span class="required">*</span></label>
+          <input type="text" name="address" placeholder="e.g., House No. 123, MG Road, Koramangala"
+                 minlength="10" maxlength="200" title="Enter complete address" required>
+          <small class="error-msg" id="address-error"></small>
+        </div>
 
-                <div class="form-group">
-                    <label>Aadhar Number <span class="required">*</span></label>
-                    <input
-                        type="text"
-                        id="aadharInput"
-                        name="aadhar_no"
-                        placeholder="Enter 12-digit Aadhar number"
-                        pattern="\d{12}"
-                        maxlength="12"
-                        inputmode="numeric"
-                        required>
-                    <small class="error-msg" id="aadhar-error"></small>
-                </div>
+        <div class="form-group">
+          <label>Primary Category <span class="required">*</span></label>
+          <select name="category" id="primaryCategorySelect" required>
+            <option value="">Select Your Primary Category</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+          <small class="error-msg" id="category-error"></small>
+        </div>
 
-
-                <div class="form-group">
-                    <label>Pincode <span class="required">*</span></label>
-                    <input type="text" id="pincodeInput" name="pincode" placeholder="e.g., 411001"
-                           pattern="[1-9][0-9]{5}" title="Enter valid 6-digit pincode" 
-                           maxlength="6" required>
-                    <small class="error-msg" id="pincode-error"></small>
-                </div>
-
-                <!-- Full width fields -->
-                <div class="form-group full">
-                    <label>Full Address <span class="required">*</span></label>
-                    <input type="text" name="address" placeholder="e.g., House No. 123, MG Road, Koramangala"
-                           minlength="10" maxlength="200" title="Enter complete address" required>
-                    <small class="error-msg" id="address-error"></small>
-                </div>
-
-                <div class="form-group">
-                    <label>Primary Category <span class="required">*</span></label>
-                    <select name="category" id="primaryCategorySelect" required>
-                        <option value="">Select Your Primary Category</option>
-                        {% for cat in categories %}
-                        <option value="{{ cat.id }}">{{ cat.name }}</option>
-                        {% endfor %}
-                    </select>
-                    <small class="error-msg" id="category-error"></small>
-                </div>
-
-                <div class="form-group full">
-                    <label>Sub Categories (Optional)</label>
-                    <div id="subcategory-container" class="subcategory-container">
-                        <div class="subcategory-placeholder">
-                            <svg class="icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            <p>Select a primary category first to see available subcategories</p>
-                        </div>
-                    </div>
-                    <small class="note">You can select multiple subcategories that match your skills</small>
-                </div>
-
-                <div class="form-group">
-                    <label>Aadhar Card - Front Side <span class="required">*</span></label>
-                    <input type="file" name="aadhar_img_front" id="aadharFront" 
-                           accept="image/jpeg,image/jpg,image/png" required>
-                    <small class="note">Upload clear photo (JPG, PNG, max 5MB)</small>
-                    <small class="error-msg" id="aadhar-front-error"></small>
-                </div>
-
-                <div class="form-group">
-                    <label>Aadhar Card - Back Side <span class="required">*</span></label>
-                    <input type="file" name="aadhar_img_back" id="aadharBack" 
-                           accept="image/jpeg,image/jpg,image/png" required>
-                    <small class="note">Upload clear photo (JPG, PNG, max 5MB)</small>
-                    <small class="error-msg" id="aadhar-back-error"></small>
-                </div>
-
-                <div class="form-group full">
-                    <label>Your Selfie Photo <span class="required">*</span></label>
-                    <input type="file" name="selfie_img" id="selfieImg" 
-                           accept="image/jpeg,image/jpg,image/png" required>
-                    <small class="note">Upload a clear selfie photo (JPG, PNG, max 5MB)</small>
-                    <small class="error-msg" id="selfie-error"></small>
-                </div>
-
+        <div class="form-group full-width">
+          <label>Sub Categories (Optional)</label>
+          <div id="subcategory-container" class="subcategory-container">
+            <div class="subcategory-placeholder">
+              <svg class="icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <p>Select a primary category first to see available subcategories</p>
             </div>
+          </div>
+          <small class="note">You can select multiple subcategories that match your skills</small>
+        </div>
 
-            <button class="submit-btn">Register Now</button>
-        </form>
+        <div class="form-group">
+          <label>Aadhar Card - Front Side <span class="required">*</span></label>
+          <input type="file" name="aadhar_img_front" id="aadharFront" 
+                 accept="image/jpeg,image/jpg,image/png" required>
+          <small class="note">Upload clear photo (JPG, PNG, max 5MB)</small>
+          <small class="error-msg" id="aadhar-front-error"></small>
+        </div>
 
-    </div>
+        <div class="form-group">
+          <label>Aadhar Card - Back Side <span class="required">*</span></label>
+          <input type="file" name="aadhar_img_back" id="aadharBack" 
+                 accept="image/jpeg,image/jpg,image/png" required>
+          <small class="note">Upload clear photo (JPG, PNG, max 5MB)</small>
+          <small class="error-msg" id="aadhar-back-error"></small>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Your Selfie Photo <span class="required">*</span></label>
+          <input type="file" name="selfie_img" id="selfieImg" 
+                 accept="image/jpeg,image/jpg,image/png" required>
+          <small class="note">Upload a clear selfie photo (JPG, PNG, max 5MB)</small>
+          <small class="error-msg" id="selfie-error"></small>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Register Now</button>
+    </form>
+  </div>
 </div>
 
 <style>
-
-/* Wrapper */
-.page-wrapper {
+  /* Wrapper */
+  .page-wrapper {
     display: flex;
     justify-content: center;
     padding: 40px 15px;
-}
+    min-height: calc(100vh - 200px); /* Helps push footer down if needed */
+  }
 
-/* Card */
-.register-card {
+  /* Card */
+  .register-card {
     width: 100%;
-    max-width: 750px;
-    padding: 35px 40px;
+    max-width: 850px;
+    padding: 40px 45px;
     background: #fff;
     border-radius: 15px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-}
+  }
 
-/* Title */
-.title {
+  /* Title */
+  .title {
     text-align: center;
     color: #007bff;
     font-size: 28px;
     font-weight: 700;
-}
+    margin-bottom: 8px;
+  }
 
-.subtitle {
+  .subtitle {
     text-align: center;
     color: #6c757d;
-    margin-bottom: 25px;
-}
+    margin-bottom: 30px;
+    font-size: 15px;
+  }
 
-/* GRID SYSTEM */
-.grid {
+  /* Responsive Grid */
+  .grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 22px 25px;
-}
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 22px 28px;
+  }
 
-.form-group {
-    position: relative;
-}
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
 
-.form-group.full {
-    grid-column: span 2;
-}
+  .form-group.full-width {
+    grid-column: 1 / -1; /* Always full width */
+  }
 
-.form-group label {
-    display: block;
+  .form-group label {
     margin-bottom: 6px;
     font-weight: 500;
     color: #333;
-}
+    font-size: 15px;
+  }
 
-.required {
+  .required {
     color: #dc3545;
     font-weight: bold;
-}
+  }
 
-input, select {
+  input[type="text"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="file"],
+  select {
     width: 100%;
-    padding: 13px;
+    padding: 13px 14px;
     border: 1px solid #d4d4d4;
     border-radius: 8px;
     font-size: 15px;
     transition: all 0.3s ease;
-}
+  }
 
-input:focus, select:focus {
+  input:focus, select:focus {
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-}
+  }
 
-input.error, select.error {
+  input.error, select.error {
     border-color: #dc3545;
-}
+  }
 
-input.success, select.success {
+  input.success, select.success {
     border-color: #28a745;
-}
+  }
 
-/* ============================================ */
-/* SUBCATEGORY CONTAINER - MODERN CHECKBOX UI */
-/* ============================================ */
+  input[type="file"] {
+    padding: 10px;
+    font-size: 14px;
+  }
 
-.subcategory-container {
-    min-height: 120px;
-    max-height: 280px;
-    padding: 15px;
+  /* Subcategory Container */
+  .subcategory-container {
+    min-height: 140px;
+    max-height: 300px;
+    padding: 16px;
     border: 1px solid #d4d4d4;
     border-radius: 8px;
     background: #f8f9fa;
     overflow-y: auto;
-    transition: all 0.3s ease;
-}
+  }
 
-.subcategory-container:hover {
-    border-color: #007bff;
-}
-
-/* Placeholder state */
-.subcategory-placeholder {
+  .subcategory-placeholder,
+  .subcategory-loading,
+  .subcategory-empty,
+  .subcategory-error {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 120px;
-    color: #6c757d;
+    height: 140px;
     text-align: center;
-}
-
-.subcategory-placeholder .icon {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 12px;
-    color: #adb5bd;
-    opacity: 0.8;
-}
-
-.subcategory-placeholder p {
-    margin: 0;
-    font-size: 14px;
     color: #6c757d;
-}
+  }
 
-/* Loading state */
-.subcategory-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 120px;
-    color: #007bff;
-    font-size: 14px;
-    gap: 10px;
-}
-
-.subcategory-loading .spinner {
-    width: 20px;
-    height: 20px;
-    border: 3px solid #e9ecef;
-    border-top-color: #007bff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Checkbox items */
-.subcategory-item {
+  .subcategory-item {
     display: flex;
     align-items: center;
     padding: 12px 15px;
@@ -298,189 +253,154 @@ input.success, select.success {
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
-}
+  }
 
-.subcategory-item:hover {
+  .subcategory-item:hover {
     background: #f0f7ff;
     border-color: #007bff;
     transform: translateX(4px);
-}
+  }
 
-.subcategory-item:last-child {
-    margin-bottom: 0;
-}
-
-.subcategory-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    margin: 0;
+  .subcategory-item input[type="checkbox"] {
     margin-right: 12px;
-    cursor: pointer;
     accent-color: #007bff;
-}
+  }
 
-.subcategory-item label {
-    margin: 0;
-    font-size: 15px;
-    color: #333;
-    cursor: pointer;
+  .subcategory-item label {
     flex: 1;
+    margin: 0;
+    cursor: pointer;
     user-select: none;
-}
+  }
 
-.subcategory-item.checked {
+  .subcategory-item.checked {
     background: #e7f3ff;
     border-color: #007bff;
-}
+  }
 
-.subcategory-item.checked label {
+  .subcategory-item.checked label {
     color: #007bff;
     font-weight: 500;
-}
+  }
 
-/* Empty state */
-.subcategory-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 120px;
-    color: #6c757d;
-    text-align: center;
-}
-
-.subcategory-empty .icon {
-    width: 42px;
-    height: 42px;
-    margin-bottom: 10px;
-    color: #adb5bd;
-    opacity: 0.7;
-}
-
-.subcategory-empty p {
-    margin: 0;
-    font-size: 13px;
-}
-
-/* Error state */
-.subcategory-error {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 120px;
-    color: #dc3545;
-    text-align: center;
-}
-
-.subcategory-error .icon {
-    width: 42px;
-    height: 42px;
-    margin-bottom: 10px;
-    color: #dc3545;
-}
-
-.subcategory-error p {
-    margin: 0;
-    font-size: 13px;
-}
-
-/* Scrollbar styling */
-.subcategory-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-.subcategory-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
-
-.subcategory-container::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
-}
-
-.subcategory-container::-webkit-scrollbar-thumb:hover {
-    background: #a0a0a0;
-}
-
-/* Checkbox inline */
-.checkbox-inline {
-    margin-top: 5px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.checkbox-inline input[type="checkbox"] {
-    width: auto;
-    margin: 0;
-}
-
-.checkbox-inline label {
-    margin: 0;
-    font-weight: normal;
-    cursor: pointer;
-}
-
-/* Helper text */
-.note {
+  /* Helper & Error */
+  .note {
     display: block;
     margin-top: 5px;
     font-size: 12px;
     color: #6c757d;
-}
+  }
 
-.error-msg {
+  .error-msg {
     display: block;
     margin-top: 5px;
     font-size: 12px;
     color: #dc3545;
     font-weight: 500;
-}
+    min-height: 18px;
+  }
 
-/* Button */
-.submit-btn {
+  .checkbox-inline {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  /* Submit Button */
+  .submit-btn {
     width: 100%;
-    margin-top: 25px;
-    padding: 15px;
+    margin-top: 30px;
+    padding: 16px;
     font-size: 18px;
-    background: #007bff;
+    background: linear-gradient(135deg, #007bff, #0056d2);
     border: none;
     color: white;
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
-    transition: background 0.3s ease;
-}
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+  }
 
-.submit-btn:hover {
-    background: #0056b3;
-}
+  .submit-btn:hover {
+    background: linear-gradient(135deg, #0056b3, #004099);
+    transform: translateY(-2px);
+  }
 
-.submit-btn:disabled {
+  .submit-btn:disabled {
     background: #6c757d;
     cursor: not-allowed;
-}
+    transform: none;
+    box-shadow: none;
+  }
 
-/* File input styling */
-input[type="file"] {
-    padding: 10px;
-    font-size: 14px;
-}
-
-/* MOBILE FIX */
-@media (max-width: 650px) {
-    .grid {
-        grid-template-columns: 1fr;
-    }
-    .form-group.full {
-        grid-column: span 1;
-    }
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
     .register-card {
-        padding: 25px 20px;
+      padding: 35px 30px;
     }
-}
+
+    .title {
+      font-size: 26px;
+    }
+
+    .grid {
+      gap: 20px 24px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .page-wrapper {
+      padding: 20px 10px;
+    }
+
+    .register-card {
+      padding: 30px 20px;
+      border-radius: 12px;
+    }
+
+    .title {
+      font-size: 24px;
+    }
+
+    .subtitle {
+      font-size: 14.5px;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .submit-btn {
+      padding: 15px;
+      font-size: 17px;
+    }
+
+    .subcategory-container {
+      min-height: 130px;
+      max-height: 260px;
+    }
+
+    .subcategory-placeholder,
+    .subcategory-loading,
+    .subcategory-empty,
+    .subcategory-error {
+      height: 130px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .register-card {
+      padding: 25px 15px;
+    }
+
+    .title {
+      font-size: 22px;
+    }
+  }
 </style>
 
 <script>
@@ -504,19 +424,17 @@ document.getElementById("phoneInput").addEventListener("input", function () {
     }
 });
 
+// Format Aadhar number with spaces (1234 5678 9012)
 document.getElementById("aadharInput").addEventListener("input", function (e) {
-    // 1️⃣ Remove everything except digits
-    let value = e.target.value.replace(/\D/g, '');
-
-    // 2️⃣ Limit to 12 digits
-    value = value.slice(0, 12);
-
-    // 3️⃣ Add space after every 4 digits
+    let value = e.target.value.replace(/\s/g, ''); // Remove spaces
+    if (value.length > 12) {
+        value = value.slice(0, 12);
+    }
+    
+    // Add spaces after every 4 digits
     let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
-
     e.target.value = formatted;
 });
-
 
 // Validate phone numbers (only digits)
 document.getElementById("phoneInput").addEventListener("input", function (e) {
@@ -563,7 +481,7 @@ function validateField(input) {
 
         case 'aadhar_no':
             const aadharDigits = value.replace(/\s/g, '');
-            if (value && !/^[0-9]{12}$/.test(aadharDigits)) {
+            if (aadharDigits.length !== 12) {
                 errorMsg = 'Aadhar number must be exactly 12 digits';
                 isValid = false;
             }
@@ -629,6 +547,19 @@ document.querySelectorAll('input[type="text"], input[type="tel"], input[type="nu
     input.addEventListener('blur', function() {
         validateField(this);
     });
+});
+
+const aadharInput = document.getElementById("aadharInput");
+
+aadharInput.addEventListener("input", function (e) {
+    let value = e.target.value.replace(/\D/g, ''); // remove non-digits
+
+    // Limit to 12 digits
+    value = value.slice(0, 12);
+
+    // Format as XXXX XXXX XXXX
+    let formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+    e.target.value = formatted;
 });
 
 // ============================================================
@@ -877,6 +808,6 @@ if (addressInput) {
 }
 
 console.log('✅ Form validation initialized');
-</scrip>
+</script>
 
 {% endblock %}

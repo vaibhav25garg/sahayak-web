@@ -1,194 +1,307 @@
 {% extends 'base.html' %}
 {% block title %}SahayakCircle | Trusted Local Services{% endblock %}
 
-
-
 {% block content %}
 
 <style>
-
-/* ---------- HERO ---------- */
-.hero {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 40px;
-  padding: 60px 0;
-}
-
-.hero-left h1 {
-  font-size: 38px;
-  line-height: 1.3;
-  margin-bottom: 15px;
-}
-
-.hero-left h1 span {
-  color: #007bff;
-}
-
-.hero-left p {
-  font-size: 16px;
-  color: #555;
-  margin-bottom: 25px;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-}
-
-.hero-right {
-  flex: 1;
-}
-
-.video-placeholder {
-  background: #f1f1f1;
-  border-radius: 12px;
-  height: 260px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #777;
-  font-size: 14px;
-  border: 2px dashed #ccc;
-}
-
-/* ---------- SECTIONS ---------- */
-.section {
-  margin: 60px 0;
-}
-
-.section-title {
-  font-size: 26px;
-  margin-bottom: 25px;
-  text-align: center;
-}
-
-.bg-light {
-  background: #f8f9fa;
-  padding: 50px 30px;
-  border-radius: 12px;
-}
-
-/* ---------- CATEGORY ---------- */
-.category-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-}
-
-.category-card {
-  padding: 12px 18px;
-  background: #eef3ff;
-  border-radius: 30px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.category-card:hover {
-  background: #007bff;
-  color: #fff;
-}
-
-/* ---------- SERVICES ---------- */
-.service-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-}
-
-.service-card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 20px;
-  border: 1px solid #e1e1e1;
-  transition: transform 0.2s ease;
-}
-
-.service-card:hover {
-  transform: translateY(-4px);
-}
-
-.service-card h4 {
-  margin-bottom: 8px;
-}
-
-.service-card p {
-  font-size: 14px;
-  color: #666;
-}
-
-/* ---------- FEATURES ---------- */
-.feature-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-  text-align: center;
-}
-
-.feature-card {
-  background: #fff;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.05);
-}
-
-.feature-card p {
-  font-size: 14px;
-  color: #555;
-  margin-top: 8px;
-}
-
-/* ---------- CTA ---------- */
-.cta {
-  background: linear-gradient(135deg, #007bff, #0056d2);
-  color: #fff;
-  padding: 50px;
-  border-radius: 15px;
-  text-align: center;
-}
-
-.cta h2 {
-  margin-bottom: 10px;
-}
-
-.cta p {
-  margin-bottom: 20px;
-  opacity: 0.9;
-}
-
-/* ---------- BUTTONS ---------- */
-.btn-lg {
-  padding: 14px 22px;
-  font-size: 16px;
-}
-
-.btn-outline {
-  background: transparent;
-  border: 2px solid #007bff;
-  color: #007bff;
-}
-
-.btn-outline:hover {
-  background: #007bff;
-  color: #fff;
-}
-
-/* ---------- RESPONSIVE ---------- */
-@media (max-width: 900px) {
+  /* ---------- HERO ---------- */
   .hero {
-    flex-direction: column;
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+    padding: 60px 0;
+  }
+
+  .hero-left {
+    flex: 1;
+    min-width: 300px;
+  }
+
+  .hero-left h1 {
+    font-size: 38px;
+    line-height: 1.3;
+    margin-bottom: 15px;
+  }
+
+  .hero-left h1 span {
+    color: #007bff;
+  }
+
+  .hero-left p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 25px;
   }
 
   .hero-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  .hero-right {
+    flex: 1;
+    min-width: 300px;
+  }
+
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+
+  .video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  /* ---------- SECTIONS ---------- */
+  .section {
+    margin: 60px 0;
+  }
+
+  .section-title {
+    font-size: 26px;
+    margin-bottom: 25px;
+    text-align: center;
+  }
+
+  .bg-light {
+    background: #f8f9fa;
+    padding: 50px 20px;
+    border-radius: 12px;
+  }
+
+  /* ---------- CATEGORY ---------- */
+  .category-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
     justify-content: center;
   }
-}
 
+  .category-card {
+    padding: 12px 18px;
+    background: #eef3ff;
+    border-radius: 30px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .category-card:hover {
+    background: #007bff;
+    color: #fff;
+  }
+
+  /* ---------- SERVICES ---------- */
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+
+  .service-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid #e1e1e1;
+    transition: transform 0.2s ease;
+    height: 100%;
+  }
+
+  .service-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .service-card h4 {
+    margin-bottom: 8px;
+  }
+
+  .service-card p {
+    font-size: 14px;
+    color: #666;
+  }
+
+  /* ---------- FEATURES ---------- */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    text-align: center;
+  }
+
+  .feature-card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+  }
+
+  .feature-card p {
+    font-size: 14px;
+    color: #555;
+    margin-top: 8px;
+  }
+
+  /* ---------- CTA ---------- */
+  .cta {
+    background: linear-gradient(135deg, #007bff, #0056d2);
+    color: #fff;
+    padding: 50px 20px;
+    border-radius: 15px;
+    text-align: center;
+  }
+
+  .cta h2 {
+    margin-bottom: 10px;
+    font-size: 28px;
+  }
+
+  .cta p {
+    margin-bottom: 20px;
+    opacity: 0.9;
+    font-size: 16px;
+  }
+
+  /* ---------- BUTTONS ---------- */
+  .btn-lg {
+    padding: 14px 22px;
+    font-size: 16px;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 2px solid  #007bff;
+    color: #007bff;
+  }
+
+  .btn-outline:hover {
+    background: #fff;
+    color: #007bff;
+  }
+
+  /* ---------- RESPONSIVE IMPROVEMENTS ---------- */
+  @media (max-width: 992px) {
+    .hero {
+      gap: 30px;
+      padding: 50px 0;
+    }
+
+    .hero-left h1 {
+      font-size: 34px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      flex-direction: column;
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    .hero-actions {
+      justify-content: center;
+    }
+
+    .hero-left h1 {
+      font-size: 30px;
+    }
+
+    .hero-left p {
+      font-size: 15px;
+    }
+
+    .section {
+      margin: 50px 0;
+    }
+
+    .section-title {
+      font-size: 24px;
+    }
+
+    .bg-light {
+      padding: 40px 15px;
+    }
+
+    .cta {
+      padding: 40px 15px;
+    }
+
+    .cta h2 {
+      font-size: 26px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .hero {
+      padding: 30px 0;
+    }
+
+    .hero-left h1 {
+      font-size: 26px;
+    }
+
+    .hero-left p {
+      font-size: 14px;
+    }
+
+    .btn-lg {
+      padding: 12px 18px;
+      font-size: 15px;
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+
+    .hero-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-actions > a {
+      width: 80%;
+      max-width: 300px;
+    }
+
+    .section {
+      margin: 40px 0;
+    }
+
+    .section-title {
+      font-size: 22px;
+    }
+
+    .bg-light,
+    .cta {
+      padding: 30px 10px;
+    }
+
+    .category-grid {
+      gap: 10px;
+    }
+
+    .category-card {
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .hero-left h1 {
+      font-size: 24px;
+    }
+  }
 </style>
 
 <!-- HERO SECTION -->
@@ -213,12 +326,19 @@
   </div>
 
   <div class="hero-right">
-    <div class="video-placeholder">
-      <span>Intro Video / Illustration</span>
-    </div>
+    <div class="video-wrapper">
+    <iframe 
+      src="https://www.youtube.com/embed/J8oIx4H27es?rel=0&modestbranding=1&showinfo=0&controls=1" 
+      title="How SahayakCircle Works – Home Services Made Easy" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen 
+      loading="lazy">
+    </iframe>
   </div>
+</div>
 </section>
 
+<!-- Rest of your sections remain unchanged -->
 <!-- CATEGORIES -->
 <section class="section">
   <h2 class="section-title">Popular Categories</h2>
@@ -274,6 +394,5 @@
     Get Started
   </a>
 </section>
-
 
 {% endblock %}

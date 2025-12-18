@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}Request a Service | SahayakCircle{% endblock %}
+
 {% block content %}
 
 <div class="form-container">
@@ -54,15 +55,28 @@
         <small class="helper-text">Help us locate you better</small>
       </div>
 
-      <div class="form-group full-width">
-        <label>Service Category <span class="required">*</span></label>
-        <select name="category" id="categorySelect" required>
-          <option value="">-- Select Service You Need --</option>
+      <div class="form-group">
+        <label>Primary Category <span class="required">*</span></label>
+        <select name="category" id="primaryCategorySelect" required>
+          <option value="">Select Your Primary Category</option>
           {% for cat in categories %}
           <option value="{{ cat.id }}">{{ cat.name }}</option>
           {% endfor %}
         </select>
         <small class="error-msg" id="category-error"></small>
+      </div>
+
+      <div class="form-group full-width">
+        <label>Sub Categories (Optional)</label>
+        <div id="subcategory-container" class="subcategory-container">
+          <div class="subcategory-placeholder">
+            <svg class="icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p>Select a primary category first to see available subcategories</p>
+          </div>
+        </div>
+        <small class="note">You can select multiple subcategories</small>
       </div>
 
       <div class="form-group">
@@ -86,14 +100,13 @@
   /* Container */
   .form-container {
     background: #ffffff;
-    padding: 35px 45px;
+    padding: 40px 50px;
     border-radius: 15px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-    max-width: 750px;
+    max-width: 800px;
     margin: 40px auto;
   }
 
-  /* Title */
   .form-title {
     text-align: center;
     color: #28a745;
@@ -110,30 +123,28 @@
     line-height: 1.5;
   }
 
-  /* Form */
   .service-form {
     display: flex;
     flex-direction: column;
     gap: 15px;
   }
 
+  /* Grid - Responsive by default */
   .form-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px 25px;
   }
 
   .form-group {
     display: flex;
     flex-direction: column;
-    position: relative;
   }
 
   .form-group.full-width {
-    grid-column: span 2;
+    grid-column: 1 / -1; /* Full width on all screen sizes */
   }
 
-  /* Labels */
   label {
     font-weight: 500;
     margin-bottom: 6px;
@@ -146,12 +157,12 @@
     font-weight: bold;
   }
 
-  /* Inputs */
   input[type="text"],
   input[type="tel"],
   input[type="date"],
   select {
-    padding: 13px;
+    width: 100%;
+    padding: 13px 14px;
     border: 1px solid #d4d4d4;
     border-radius: 8px;
     font-size: 15px;
@@ -172,8 +183,7 @@
     border-color: #28a745;
   }
 
-  /* Helper & Error Messages */
-  .helper-text {
+  .helper-text, .note {
     display: block;
     margin-top: 5px;
     font-size: 12px;
@@ -189,13 +199,12 @@
     min-height: 18px;
   }
 
-  /* Submit Button */
   .btn-submit {
-    margin-top: 25px;
+    margin-top: 30px;
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: #fff;
     border: none;
-    padding: 15px 25px;
+    padding: 16px 28px;
     border-radius: 8px;
     font-size: 17px;
     font-weight: 600;
@@ -206,6 +215,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
   }
 
   .btn-submit:hover {
@@ -214,34 +224,154 @@
     transform: translateY(-2px);
   }
 
-  .btn-submit:active {
-    transform: translateY(0);
+  /* Subcategory Container */
+  .subcategory-container {
+    min-height: 140px;
+    max-height: 300px;
+    padding: 16px;
+    border: 1px solid #d4d4d4;
+    border-radius: 8px;
+    background: #f8f9fa;
+    overflow-y: auto;
   }
 
-  .btn-submit:disabled {
-    background: #6c757d;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
+  .subcategory-placeholder,
+  .subcategory-loading,
+  .subcategory-empty,
+  .subcategory-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 140px;
+    text-align: center;
+    color: #6c757d;
   }
 
-  /* Mobile Responsive */
-  @media (max-width: 650px) {
+  .subcategory-placeholder .icon,
+  .subcategory-empty .icon,
+  .subcategory-error .icon {
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  .subcategory-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .subcategory-item:hover {
+    background: #f0f7ff;
+    border-color: #007bff;
+    transform: translateX(4px);
+  }
+
+  .subcategory-item input[type="checkbox"] {
+    margin-right: 12px;
+    accent-color: #007bff;
+  }
+
+  .subcategory-item label {
+    flex: 1;
+    margin: 0;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .subcategory-item.checked {
+    background: #e7f3ff;
+    border-color: #007bff;
+  }
+
+  .subcategory-item.checked label {
+    color: #007bff;
+    font-weight: 500;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
     .form-container {
-      padding: 25px 20px;
+      padding: 30px 25px;
       margin: 20px auto;
+      border-radius: 12px;
     }
-    
+
+    .form-title {
+      font-size: 26px;
+    }
+
+    .form-subtitle {
+      font-size: 14.5px;
+    }
+
     .form-grid {
-      grid-template-columns: 1fr;
+      gap: 18px 20px;
     }
-    
-    .form-group.full-width {
-      grid-column: span 1;
+
+    input[type="text"],
+    input[type="tel"],
+    input[type="date"],
+    select {
+      padding: 12px 13px;
+      font-size: 15px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .form-container {
+      padding: 25px 18px;
+      margin: 15px auto;
     }
 
     .form-title {
       font-size: 24px;
+    }
+
+    .form-subtitle {
+      font-size: 14px;
+    }
+
+    .form-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .btn-submit {
+      padding: 15px 24px;
+      font-size: 16.5px;
+    }
+
+    .subcategory-container {
+      min-height: 130px;
+      max-height: 260px;
+    }
+
+    .subcategory-placeholder,
+    .subcategory-loading,
+    .subcategory-empty,
+    .subcategory-error {
+      height: 130px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .form-container {
+      padding: 20px 15px;
+    }
+
+    .form-title {
+      font-size: 22px;
+    }
+
+    .btn-submit {
+      font-size: 16px;
     }
   }
 </style>
@@ -439,6 +569,131 @@ if (addressInput) {
 }
 
 console.log('✅ Service request form validation initialized');
+
+// ============================================================
+// LOAD SUBCATEGORIES - MODERN CHECKBOX UI
+// ============================================================
+
+function loadSubcategories(categoryId) {
+    const container = document.getElementById("subcategory-container");
+    
+    if (!categoryId) {
+        container.innerHTML = `
+            <div class="subcategory-placeholder">
+                <i class="icon">📋</i>
+                <p>Select a primary category first to see available subcategories</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Show loading state
+    container.innerHTML = `
+        <div class="subcategory-loading">
+            <div class="spinner"></div>
+            <span>Loading subcategories...</span>
+        </div>
+    `;
+
+    // Fetch subcategories for the selected parent category
+    fetch(`/categories/get-subcategories/${categoryId}/`)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Failed to load subcategories');
+            }
+            return res.json();
+        })
+        .then(data => {
+            const subcategories = data.subcategories || [];
+
+            if (subcategories.length === 0) {
+                container.innerHTML = `
+                    <div class="subcategory-empty">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <p>No subcategories available for this category</p>
+                    </div>
+                `;
+                console.log(`ℹ️ No subcategories found for category: ${categoryId}`);
+                return;
+            }
+
+            // Build checkbox list
+            let html = '';
+            subcategories.forEach((sub, index) => {
+                html += `
+                    <div class="subcategory-item" data-checkbox-id="subcat-${index}">
+                        <input type="checkbox" 
+                               name="secondary_categories" 
+                               value="${sub.id}" 
+                               id="subcat-${index}">
+                        <label for="subcat-${index}">${sub.name}</label>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            
+            // Add click event listeners to each item
+            container.querySelectorAll('.subcategory-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Only toggle if not clicking directly on checkbox or label
+                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
+                        const checkboxId = this.getAttribute('data-checkbox-id');
+                        const checkbox = document.getElementById(checkboxId);
+                        checkbox.checked = !checkbox.checked;
+                        updateCheckboxUI(this, checkbox.checked);
+                    } else if (e.target.tagName === 'INPUT') {
+                        // If clicking directly on checkbox, just update UI
+                        updateCheckboxUI(this, e.target.checked);
+                    } else if (e.target.tagName === 'LABEL') {
+                        // If clicking on label, it will toggle checkbox automatically
+                        // We just need to update UI after a tiny delay
+                        setTimeout(() => {
+                            const checkboxId = this.getAttribute('data-checkbox-id');
+                            const checkbox = document.getElementById(checkboxId);
+                            updateCheckboxUI(this, checkbox.checked);
+                        }, 10);
+                    }
+                });
+            });
+
+            console.log(`✅ Loaded ${subcategories.length} subcategories for category: ${categoryId}`);
+        })
+        .catch(err => {
+            console.error('❌ Error loading subcategories:', err);
+            container.innerHTML = `
+                <div class="subcategory-error">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <p>Error loading subcategories. Please try again.</p>
+                </div>
+            `;
+        });
+}
+
+// Update checkbox UI state
+function updateCheckboxUI(item, isChecked) {
+    if (isChecked) {
+        item.classList.add('checked');
+    } else {
+        item.classList.remove('checked');
+    }
+}
+
+// Listen to category change
+document.getElementById("primaryCategorySelect").addEventListener("change", function () {
+    const categoryId = this.value;
+    console.log(`📂 Category selected: ${categoryId}`);
+    loadSubcategories(categoryId);
+    validateField(this);
+});
+
 </script>
+
 
 {% endblock %}

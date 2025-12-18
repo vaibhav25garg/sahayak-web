@@ -2,50 +2,46 @@
       action="/dashboard/tasks/edit/{{ task.id }}/">
 {% csrf_token %}
 
-<div class="row g-3">
+<div class="row g-3 g-md-4">
 
     <!-- CUSTOMER -->
-    <div class="col-md-6">
-        <label class="form-label">Customer Name</label>
+    <div class="col-lg-6 col-md-12">
+        <label class="form-label fw-medium">Customer Name <span class="text-danger">*</span></label>
         <input type="text" name="cust_name" class="form-control" value="{{ task.cust_name }}" required>
     </div>
 
-    <div class="col-md-6">
-        <label class="form-label">Phone</label>
+    <div class="col-lg-6 col-md-12">
+        <label class="form-label fw-medium">Phone <span class="text-danger">*</span></label>
         <input type="text" name="cust_phone" class="form-control" value="{{ task.cust_phone }}" required pattern="\d{10}" maxlength="10">
     </div>
 
-    <!-- WhatsApp Number + Same as Phone (Compact Row) -->
-    <div class="col-md-6">
-        <label class="form-label">WhatsApp Number</label>
+    <!-- WhatsApp Number + Same as Phone -->
+    <div class="col-lg-6 col-md-12">
+        <label class="form-label fw-medium">WhatsApp Number <span class="text-danger">*</span></label>
         <div class="input-group">
             <input type="text" name="cust_whatsapp" class="form-control"
-                    required pattern="\d{10}" maxlength="10" placeholder="WhatsApp Number" value="{{ task.cust_whatsapp }}">
-
-            <div class="input-group-text">
-                <input class="form-check-input mt-0" 
-                        type="checkbox" 
-                        id="sameWhatsappCheck" 
-                        title="Same as Phone Number">
-            </div>
+                   required pattern="\d{10}" maxlength="10" placeholder="WhatsApp Number" value="{{ task.cust_whatsapp }}">
+            <button class="btn btn-outline-secondary" type="button" id="sameWhatsappBtn">
+                <i class="fas fa-copy"></i>
+            </button>
         </div>
-        <small class="text-muted">Check to copy phone number</small>
+        <small class="text-muted">Click button to copy from phone</small>
     </div>
 
-    <div class="col-md-6">
-        <label class="form-label">Pincode</label>
+    <div class="col-lg-6 col-md-12">
+        <label class="form-label fw-medium">Pincode <span class="text-danger">*</span></label>
         <input type="text" name="pincode" class="form-control" value="{{ task.pincode }}" required pattern="\d{6}" maxlength="6">
     </div>
 
     <div class="col-12">
-        <label class="form-label">Location</label>
-        <textarea name="cust_location" class="form-control" required>{{ task.cust_location }}</textarea>
+        <label class="form-label fw-medium">Full Address <span class="text-danger">*</span></label>
+        <textarea name="cust_location" class="form-control" rows="3" required>{{ task.cust_location }}</textarea>
     </div>
 
-    <!-- CATEGORY -->
-    <div class="col-md-6">
-        <label class="form-label">Category</label>
-        <select name="category" class="form-select" required>
+    <!-- CATEGORY & SUBCATEGORIES -->
+    <div class="col-lg-6 col-md-12">
+        <label class="form-label fw-medium">Category <span class="text-danger">*</span></label>
+        <select name="category" id="categorySelect" class="form-select" required>
             <option value="">Select Category</option>
             {% for cat in categories %}
                 {% if cat.category_type == "primary" %}
@@ -57,9 +53,9 @@
         </select>
     </div>
 
-    <div class="col-md-6">
-        <label class="form-label">Subcategories</label>
-        <select name="subcategories" id="subcategorySelect" class="form-select" multiple>
+    <div class="col-lg-6 col-md-12">
+        <label class="form-label fw-medium">Subcategories</label>
+        <select name="subcategories" id="subcategorySelect" class="form-select" multiple size="5">
             {% for sc in categories %}
                 <option value="{{ sc.id }}"
                     {% if sc in task.subcategories.all %}selected{% endif %}>
@@ -67,70 +63,65 @@
                 </option>
             {% endfor %}
         </select>
-        <small class="text-muted">Ctrl+Click to select multiple</small>
+        <small class="text-muted">Hold Ctrl/Cmd to select multiple</small>
     </div>
 
-
     <div class="col-12">
-        <label class="form-label">Additional Info</label>
-        <textarea name="additional_info" class="form-control">{{ task.additional_info }}</textarea>
+        <label class="form-label fw-medium">Additional Information</label>
+        <textarea name="additional_info" class="form-control" rows="4">{{ task.additional_info }}</textarea>
     </div>
 
     <!-- IMAGE -->
     <div class="col-12">
-        <label class="form-label">Task Image</label><br>
+        <label class="form-label fw-medium">Task Image</label><br>
         {% if task.task_image %}
-            <img src="{{ task.task_image.url }}" width="150" class="mb-2 rounded">
+            <div class="mb-3">
+                <img src="{{ task.task_image.url }}" class="img-fluid rounded shadow-sm" style="max-width: 300px;" alt="Current Task Image">
+                <p class="text-muted small mt-1">Current image (upload new to replace)</p>
+            </div>
         {% endif %}
-        <input type="file" name="task_image" class="form-control">
+        <input type="file" name="task_image" class="form-control" accept="image/*">
     </div>
 
     <!-- WORKER -->
     <input type="hidden" name="worker" value="{{ task.worker.id|default_if_none:'' }}">
 
-
-    <div class="col-md-6">
-        <label class="form-label">Assigned Worker</label>
+    <div class="col-lg-4 col-md-6 col-12">
+        <label class="form-label fw-medium">Assigned Worker</label>
         <input type="text" name="worker_display" class="form-control"
-               value="{% if task.worker %}{{ task.worker.name }}{% endif %}" readonly>
+               value="{% if task.worker %}{{ task.worker.name }}{% endif %}" readonly placeholder="No worker assigned">
     </div>
 
-    <div class="col-md-6">
-        <label class="form-label">Worker Phone</label>
+    <div class="col-lg-4 col-md-6 col-12">
+        <label class="form-label fw-medium">Worker Phone</label>
         <input type="text" name="worker_phone" class="form-control"
-               value="{{ task.worker_phone }}" readonly>
+               value="{{ task.worker.phone|default:'' }}" readonly>
     </div>
 
-    <div class="col-md-6">
-        <label class="form-label">Worker Category</label>
-        <input type="text" name="worker_category" class="form-control"
-               value="{{ task.worker_category }}" readonly>
-    </div>
-
-    <div class="col-md-4 mt-1">
-        <button type="button" onclick="openAssignWorkerModal()" class="btn btn-outline-primary w-100">
-            Change Worker
+    <div class="col-lg-4 col-md-12 col-12 d-grid">
+        <button type="button" onclick="openAssignWorkerModal()" class="btn btn-outline-primary h-100">
+            <i class="fas fa-user-plus me-2"></i>Change / Assign Worker
         </button>
     </div>
 
-    <!-- SCHEDULE -->
-    <div class="col-md-6">
-        <label>Schedule Date</label>
+    <!-- SCHEDULE & SERVICE DONE -->
+    <div class="col-lg-6 col-md-12">
+        <label class="form-label fw-medium">Schedule Date & Time</label>
         <input type="datetime-local" name="schedule_date"
                value="{{ task.schedule_date|date:'Y-m-d\\TH:i' }}"
                class="form-control">
     </div>
 
-    <div class="col-md-6">
-        <label>Service Done Date</label>
+    <div class="col-lg-6 col-md-12">
+        <label class="form-label fw-medium">Service Done Date</label>
         <input type="date" name="day_service_done"
                value="{{ task.day_service_done|date:'Y-m-d' }}"
                class="form-control">
     </div>
 
     <!-- STATUS -->
-    <div class="col-md-6">
-        <label>Status</label>
+    <div class="col-lg-6 col-md-12">
+        <label class="form-label fw-medium">Status</label>
         <select name="status" class="form-select">
             {% for key,label in task.STATUS_CHOICES %}
                 <option value="{{ key }}" {% if task.status == key %}selected{% endif %}>{{ label }}</option>
@@ -138,26 +129,28 @@
         </select>
     </div>
 
-    <!-- PAYMENT & FEEDBACK -->
-    <div class="col-md-6">
-        <label>Payment Received</label>
+    <!-- PAYMENT & RATING -->
+    <div class="col-lg-6 col-md-12">
+        <label class="form-label fw-medium">Payment Received (₹)</label>
         <input type="number" step="0.01" name="payment_received_amt"
-               class="form-control" value="{{ task.payment_received_amt }}">
+               class="form-control" value="{{ task.payment_received_amt|default:'0' }}" min="0">
     </div>
 
-    <div class="col-md-6">
-        <label>Rating (0–5)</label>
+    <div class="col-lg-6 col-md-12">
+        <label class="form-label fw-medium">Rating (0–5)</label>
         <input name="rating" type="number" step="1" min="0" max="5"
-               class="form-control" value="{{ task.rating }}">
+               class="form-control" value="{{ task.rating|default:'0' }}">
     </div>
 
     <div class="col-12">
-        <label>Feedback</label>
-        <textarea name="feedback" class="form-control">{{ task.feedback }}</textarea>
+        <label class="form-label fw-medium">Customer Feedback</label>
+        <textarea name="feedback" class="form-control" rows="4">{{ task.feedback }}</textarea>
     </div>
 
-    <div class="col-12">
-        <button class="btn btn-primary w-100 mt-3">Save Changes</button>
+    <div class="col-12 text-center mt-4">
+        <button type="submit" class="btn btn-primary btn-lg px-5">
+            <i class="fas fa-save me-2"></i> Save Changes
+        </button>
     </div>
 </div>
 </form>

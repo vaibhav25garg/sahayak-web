@@ -217,4 +217,38 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Responsive improvements only */
+    @media (max-width: 992px) {
+        .card-header .d-flex {
+            flex-direction: column;
+            align-items: start !important;
+        }
+        .card-header .badge {
+            margin-top: 0.5rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .row.g-4 > .col-lg-8 {
+            order: 2;
+        }
+        .row.g-4 > .col-lg-4 {
+            order: 1;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .card-body .row > div {
+            margin-bottom: 0.5rem;
+        }
+        .btn-lg, .form-select-lg {
+            font-size: 1rem;
+        }
+        .fs-5 {
+            font-size: 1.1rem !important;
+        }
+    }
+</style>
 {% endblock %}

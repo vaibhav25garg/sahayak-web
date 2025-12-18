@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}SahayakCircle | Service Portal{% endblock %}</title>
   <style>
     /* Global reset */
@@ -13,92 +14,298 @@
 
     html, body {
       height: 100%;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
       background-color: #f8f9fa;
       display: flex;
       flex-direction: column;
     }
 
+    /* Header */
     header {
-      background-color: #007bff;
+      background: linear-gradient(135deg, #007bff, #0056d2);
       color: #fff;
-      padding: 15px 0;
-      text-align: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 24px;
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: 700;
       letter-spacing: 0.5px;
+      text-decoration: none;
+      color: #fff;
     }
 
-    nav {
-      margin-top: 10px;
+    .logo span {
+      color: #ffc107;
     }
 
-    nav a {
+    /* Desktop Navigation */
+    .nav-desktop {
+      display: flex;
+      gap: 30px;
+    }
+
+    .nav-desktop a {
       color: #fff;
       text-decoration: none;
-      margin: 0 15px;
-      font-weight: bold;
+      font-weight: 600;
+      font-size: 16px;
+      padding: 8px 0;
+      position: relative;
+      transition: color 0.3s ease;
     }
 
-    nav a:hover {
-      text-decoration: underline;
+    .nav-desktop a::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 3px;
+      bottom: 0;
+      left: 50%;
+      background-color: #ffc107;
+      transition: all 0.3s ease;
     }
 
+    .nav-desktop a:hover {
+      color: #ffc107;
+    }
+
+    .nav-desktop a:hover::after {
+      width: 100%;
+      left: 0;
+    }
+
+    /* Mobile Menu Button */
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 28px;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    /* Mobile Navigation */
+    .nav-mobile {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #0056d2;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, padding 0.4s ease;
+    }
+
+    .nav-mobile.open {
+      max-height: 400px;
+      padding: 20px 0;
+    }
+
+    .nav-mobile a {
+      display: block;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 18px;
+      padding: 15px 30px;
+      transition: background 0.3s ease, padding-left 0.3s ease;
+    }
+
+    .nav-mobile a:hover {
+      background: rgba(255, 193, 7, 0.2);
+      padding-left: 40px;
+    }
+
+    /* Main Content */
     main.container {
-      flex: 1; /* This pushes footer to the bottom */
-      max-width: 900px;
-      margin: 30px auto;
+      flex: 1;
+      max-width: 1200px;
+      margin: 40px auto;
       background-color: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.06);
     }
 
     .btn {
-      padding: 10px 15px;
+      padding: 12px 20px;
       text-decoration: none;
       margin-right: 10px;
-      border-radius: 5px;
+      margin-bottom: 10px;
+      border-radius: 8px;
       display: inline-block;
+      font-weight: 600;
+      transition: all 0.3s ease;
     }
 
-    .btn-primary { background-color: #007bff; color: #fff; }
-    .btn-success { background-color: #28a745; color: #fff; }
-
-    footer {
-      background-color: #343a40;
+    .btn-primary {
+      background-color: #007bff;
       color: #fff;
-      text-align: center;
-      padding: 15px 0;
-      font-size: 14px;
-      position: relative;
-      bottom: 0;
-      width: 100%;
-      margin-top: auto;
     }
 
+    .btn-primary:hover {
+      background-color: #0056d2;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3);
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    /* Messages */
     ul.messages {
       list-style: none;
-      padding: 0;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
     }
 
     ul.messages li {
-      color: green;
-      margin-bottom: 5px;
+      color: #155724;
+      font-weight: 500;
+    }
+
+    /* Footer */
+    footer {
+      background-color: #343a40;
+      color: #adb5bd;
+      text-align: center;
+      padding: 25px 0;
+      font-size: 14px;
+      margin-top: auto;
+    }
+
+    footer a {
+      color: #ffc107;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+      .header-inner {
+        padding: 0 15px;
+      }
+
+      main.container {
+        margin: 30px auto;
+        padding: 25px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header-inner {
+        height: 65px;
+      }
+
+      .logo {
+        font-size: 24px;
+      }
+
+      .nav-desktop {
+        display: none;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-mobile {
+        display: block;
+      }
+
+      main.container {
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      .btn {
+        display: block;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .logo {
+        font-size: 22px;
+      }
+
+      .header-inner {
+        height: 60px;
+      }
+
+      main.container {
+        margin: 15px auto;
+        padding: 15px;
+      }
+
+      footer {
+        font-size: 13px;
+        padding: 20px 10px;
+      }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>SahayakCircle</h1>
-    <nav>
+    <div class="header-inner">
+      <a href="{% url 'public:home' %}" class="logo">Sahayak<span>Circle</span></a>
+
+      <!-- Desktop Navigation -->
+      <nav class="nav-desktop">
+        <a href="{% url 'public:home' %}">Home</a>
+        <a href="{% url 'public:about' %}">About</a>
+        <a href="{% url 'public:contact' %}">Contact</a>
+        <a href="{% url 'public:requirement_form' %}">Request Service</a>
+        <a href="{% url 'public:worker_registration' %}">Join as Worker</a>
+      </nav>
+
+      <!-- Mobile Menu Toggle -->
+      <button class="menu-toggle" aria-label="Toggle menu" onclick="toggleMobileMenu()">
+        ☰
+      </button>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <nav class="nav-mobile" id="mobileNav">
       <a href="{% url 'public:home' %}">Home</a>
       <a href="{% url 'public:about' %}">About</a>
       <a href="{% url 'public:contact' %}">Contact</a>
+      <a href="{% url 'public:requirement_form' %}">Request Service</a>
+      <a href="{% url 'public:worker_registration' %}">Join as Worker</a>
     </nav>
   </header>
 
@@ -115,7 +322,39 @@
   </main>
 
   <footer>
-    &copy; {{ now|date:"Y" }} SahayakCircle — Your trusted local service partner.
+    &copy; {{ now|date:"Y" }} <a href="{% url 'public:home' %}">SahayakCircle</a> — Your trusted local service partner.
   </footer>
+
+  <script>
+    function toggleMobileMenu() {
+      const mobileNav = document.getElementById('mobileNav');
+      const menuToggle = document.querySelector('.menu-toggle');
+      
+      mobileNav.classList.toggle('open');
+      
+      if (mobileNav.classList.contains('open')) {
+        menuToggle.innerHTML = '✕';
+      } else {
+        menuToggle.innerHTML = '☰';
+      }
+    }
+
+    // Close mobile menu when clicking a link
+    document.querySelectorAll('.nav-mobile a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.getElementById('mobileNav').classList.remove('open');
+        document.querySelector('.menu-toggle').innerHTML = '☰';
+      });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const header = document.querySelector('header');
+      if (!header.contains(e.target)) {
+        document.getElementById('mobileNav').classList.remove('open');
+        document.querySelector('.menu-toggle').innerHTML = '☰';
+      }
+    });
+  </script>
 </body>
 </html>
